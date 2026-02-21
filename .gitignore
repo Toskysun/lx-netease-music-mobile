@@ -66,3 +66,7 @@ buck-out/
 
 # testing
 /coverage
+
+# Claude Code
+.claude/
+**/CLAUDE.md
