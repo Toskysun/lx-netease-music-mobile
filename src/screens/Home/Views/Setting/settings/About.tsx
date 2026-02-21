@@ -14,6 +14,9 @@ export default memo(() => {
   const openHomePage = () => {
     void openUrl('https://github.com/souvenp/lx-netease-music-mobile#readme')
   }
+  const openForkPage = () => {
+    void openUrl('https://github.com/Toskysun/lx-netease-music-mobile')
+  }
 
   const textLinkStyle = {
     ...styles.text,
@@ -24,7 +27,13 @@ export default memo(() => {
   return (
     <Section title={t('setting_about')}>
       <View style={styles.part}>
-        <Text style={styles.text}>本软件(LX-Netease Music简称LX-N Music)完全免费，代码已开源。开源地址：</Text>
+        <Text style={styles.text}>当前版本由 Toskysun 基于原版修改维护，仓库地址：</Text>
+        <TouchableOpacity onPress={openForkPage}>
+          <Text style={textLinkStyle}>https://github.com/Toskysun/lx-netease-music-mobile</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.part}>
+        <Text style={styles.text}>本软件(LX-Netease Music简称LX-N Music)完全免费，代码已开源。原版开源地址：</Text>
         <TouchableOpacity onPress={openHomePage}>
           <Text style={textLinkStyle}>https://github.com/souvenp/lx-netease-music-mobile</Text>
         </TouchableOpacity>

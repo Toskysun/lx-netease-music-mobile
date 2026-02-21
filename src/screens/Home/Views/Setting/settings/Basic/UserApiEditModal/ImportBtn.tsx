@@ -7,8 +7,6 @@ import Text from '@/components/common/Text'
 import { useI18n } from '@/lang'
 import ScriptImportExport, { type ScriptImportExportType } from './ScriptImportExport'
 import ScriptImportOnline, { type ScriptImportOnlineType } from './ScriptImportOnline'
-import { state } from '@/store/userApi'
-import { tipDialog } from '@/utils/tools'
 
 import { useTheme } from '@/store/theme/hook'
 
@@ -32,14 +30,6 @@ export default ({ btnStyle }: BtnProps) => {
   type DorpDownMenuProps = _DorpDownMenuProps<typeof importTypes>
 
   const handleAction: DorpDownMenuProps['onPress'] = ({ action }) => {
-    if (state.list.length > 20) {
-      void tipDialog({
-        message: t('user_api_max_tip'),
-        btnText: t('ok'),
-      })
-      return
-    }
-
     if (action == 'local') {
       scriptImportExportRef.current?.import()
     } else {
