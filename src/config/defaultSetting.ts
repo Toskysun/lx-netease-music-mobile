@@ -43,7 +43,7 @@ const defaultSetting: LX.AppSetting = {
   'player.isShowLyricTranslation': true,
   'player.isShowLyricRoma': false,
   'player.isShowNotificationImage': true,
-  'player.isS2t': true,
+  'player.isS2t': false,
   'player.isShowBluetoothLyric': false,
 
   'playDetail.isCoverSpin': true,

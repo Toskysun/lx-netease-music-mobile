@@ -23,8 +23,8 @@ export default memo(() => {
 
   return (
     <Section title={t('setting_basic')}>
-      {/*<IsStartupAutoPlay />*/}
-      {/*<IsStartupPushPlayDetailScreen />*/}
+      <IsStartupAutoPlay />
+      <IsStartupPushPlayDetailScreen />
       {/*<IsShowBackBtn />*/}
       {/*<IsShowExitBtn />*/}
       <IsAutoHidePlayBar />
