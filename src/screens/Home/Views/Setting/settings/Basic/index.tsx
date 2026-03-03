@@ -11,6 +11,8 @@ import IsStartupAutoPlay from './IsStartupAutoPlay'
 import IsStartupPushPlayDetailScreen from './IsStartupPushPlayDetailScreen'
 import IsAutoHidePlayBar from './IsAutoHidePlayBar'
 import IsHomePageScroll from './IsHomePageScroll'
+import IsShowBackBtn from './IsShowBackBtn'
+import IsShowExitBtn from './IsShowExitBtn'
 import IsUseSystemFileSelector from './IsUseSystemFileSelector'
 import IsAlwaysKeepStatusbarHeight from './IsAlwaysKeepStatusbarHeight'
 import DrawerLayoutPosition from './DrawerLayoutPosition'
@@ -24,9 +26,13 @@ export default memo(() => {
   return (
     <Section title={t('setting_basic')}>
       <IsStartupAutoPlay />
-      <IsStartupPushPlayDetailScreen />
-      {/*<IsShowBackBtn />*/}
-      {/*<IsShowExitBtn />*/}
+      {/*<IsStartupPushPlayDetailScreen />*/}
+      {global.lx.isCarMode ? (
+        <>
+          <IsShowBackBtn />
+          <IsShowExitBtn />
+        </>
+      ) : null}
       <IsAutoHidePlayBar />
       <IsHomePageScroll />
       <IsUseSystemFileSelector />
