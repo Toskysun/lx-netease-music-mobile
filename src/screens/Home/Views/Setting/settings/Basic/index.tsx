@@ -26,7 +26,7 @@ export default memo(() => {
   return (
     <Section title={t('setting_basic')}>
       <IsStartupAutoPlay />
-      {/*<IsStartupPushPlayDetailScreen />*/}
+      <IsStartupPushPlayDetailScreen />
       {global.lx.isCarMode ? (
         <>
           <IsShowBackBtn />
