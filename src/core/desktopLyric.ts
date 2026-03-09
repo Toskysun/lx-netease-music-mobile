@@ -21,13 +21,14 @@ import {
   checkOverlayPermission,
   openOverlayPermissionActivity,
   onPositionChange,
+  onLockChange,
 } from '@/utils/nativeModules/lyricDesktop'
 import settingState from '@/store/setting/state'
 import playerState from '@/store/player/state'
 import { tranditionalize } from '@/utils/simplify-chinese-main'
 import { getPosition } from '@/plugins/player'
-import {windowSizeTools} from "@/utils/windowSizeTools.ts";
-import {updateSetting} from "@/core/common.ts";
+import { windowSizeTools } from "@/utils/windowSizeTools.ts";
+import { updateSetting } from "@/core/common.ts";
 export { onLyricLinePlay } from '@/utils/nativeModules/lyricDesktop'
 
 export const showDesktopLyric = async () => {
@@ -39,8 +40,8 @@ export const showDesktopLyric = async () => {
   // 如果歌词位置是初始的 (0,0)，则自动计算并设置为顶部居中
   if (positionX === 0 && positionY === 0) {
     const { width: screenWidth, height: screenHeight } = windowSizeTools.getSize();
-    const lyricWidthPercent = setting['desktopLyric.width'];
-    const lyricWidth = screenWidth * (lyricWidthPercent / 100);
+    const lyricWidthPercent = 100;
+    const lyricWidth = screenWidth;
 
     // 计算居中的 x 坐标
     positionX = (screenWidth - lyricWidth) / 2;
@@ -61,7 +62,7 @@ export const showDesktopLyric = async () => {
     shadowColor: setting['desktopLyric.style.lyricShadowColor'],
     opacity: setting['desktopLyric.style.opacity'],
     textSize: setting['desktopLyric.style.fontSize'],
-    width: setting['desktopLyric.width'],
+    width: 100,
     maxLineNum: setting['desktopLyric.maxLineNum'],
     positionX: setting['desktopLyric.position.x'],
     positionY: setting['desktopLyric.position.y'],
@@ -124,6 +125,7 @@ export const setDesktopLyricTextPosition = async (
 export const checkDesktopLyricOverlayPermission = checkOverlayPermission
 export const openDesktopLyricOverlayPermissionActivity = openOverlayPermissionActivity
 export const onDesktopLyricPositionChange = onPositionChange
+export const onDesktopLyricLockChange = onLockChange
 
 export const showRemoteLyric = async (isSend: boolean) => {
   await setSendLyricTextEvent(isSend)

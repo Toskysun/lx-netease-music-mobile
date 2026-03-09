@@ -10,7 +10,7 @@ import settingState from '@/store/setting/state'
 import { onScreenStateChange } from '@/utils/nativeModules/utils'
 import { AppState } from 'react-native'
 import { updateScrobblePlayTime, updateScrobbleTotalTime } from '@/core/player/scrobble'
-import {LIST_IDS} from "@/config/constant.ts"
+import { LIST_IDS } from "@/config/constant.ts"
 import listState from '@/store/list/state'
 
 const delaySavePlayInfo = throttleBackgroundTimer(() => {

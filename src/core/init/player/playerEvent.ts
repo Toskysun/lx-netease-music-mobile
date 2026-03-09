@@ -5,7 +5,7 @@ import { isActive } from '@/utils/tools'
 import BackgroundTimer from 'react-native-background-timer'
 import playerState from '@/store/player/state'
 import { setNowPlayTime } from '@/core/player/progress'
-import { scrobbleLastSong, updateScrobbleInfo } from '@/core/player/scrobble' // [修改] 从新模块导入
+import { updateScrobbleInfo } from '@/core/player/scrobble' // [修改] 从新模块导入
 
 export default () => {
   let retryNum = 0
@@ -121,7 +121,6 @@ export default () => {
   }
 
   const handleSetPlayInfo = () => {
-    scrobbleLastSong()
     retryNum = 0
     prevTimeoutId = null
     clearDelayNextTimeout()
@@ -130,7 +129,6 @@ export default () => {
   }
 
   const handleStop = () => {
-    scrobbleLastSong()
   }
 
   global.app_event.on('playerLoadstart', handleLoadstart)

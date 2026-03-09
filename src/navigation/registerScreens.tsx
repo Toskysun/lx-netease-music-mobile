@@ -30,7 +30,6 @@ import VersionModal from './components/VersionModal'
 import PactModal from './components/PactModal'
 import SyncModeModal from './components/SyncModeModal'
 import DownloadManager from "@/screens/DownloadManager";
-
 function WrappedComponent(Component: any) {
   return function inject(props: Record<string, any>) {
     const EnhancedComponent = () => (

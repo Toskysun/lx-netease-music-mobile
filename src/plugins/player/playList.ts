@@ -1,4 +1,5 @@
 import TrackPlayer, { State } from 'react-native-track-player'
+import { updateWidget } from '@/utils/nativeModules/musicWidget'
 import BackgroundTimer from 'react-native-background-timer'
 import { defaultUrl } from '@/config'
 // import { action as playerAction } from '@/store/modules/player'
@@ -34,9 +35,8 @@ const formatMusicInfo = (musicInfo: LX.Player.PlayMusic) => {
 const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'], duration?: LX.Player.Track['duration']): LX.Player.Track[] => {
   const mInfo = formatMusicInfo(musicInfo)
   const track = [] as LX.Player.Track[]
-  const isShowNotificationImage = settingState.setting['player.isShowNotificationImage']
   const album = mInfo.album || undefined
-  const artwork = isShowNotificationImage && mInfo.pic && httpRxp.test(mInfo.pic) ? mInfo.pic : undefined
+  const artwork = mInfo.pic && httpRxp.test(mInfo.pic) ? mInfo.pic : undefined
   if (url) {
     track.push({
       id: `${mInfo.id}__//${Math.random()}__//${url}`,
@@ -99,16 +99,16 @@ const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'
 export const isTempTrack = (trackId: string) => /\/\/default$/.test(trackId)
 
 
-export const getCurrentTrackId = async() => {
+export const getCurrentTrackId = async () => {
   const currentTrackIndex = await TrackPlayer.getCurrentTrack()
   return list[currentTrackIndex]?.id
 }
-export const getCurrentTrack = async() => {
+export const getCurrentTrack = async () => {
   const currentTrackIndex = await TrackPlayer.getCurrentTrack()
   return list[currentTrackIndex]
 }
 
-export const updateMetaData = async(musicInfo: LX.Player.MusicInfo, isPlay: boolean, lyric?: string, force = false) => {
+export const updateMetaData = async (musicInfo: LX.Player.MusicInfo, isPlay: boolean, lyric?: string, force = false) => {
   if (!force && isPlay == state.isPlaying) {
     const duration = await TrackPlayer.getDuration()
     if (state.prevDuration != duration) {
@@ -127,7 +127,7 @@ export const updateMetaData = async(musicInfo: LX.Player.MusicInfo, isPlay: bool
   }
 }
 
-export const initTrackInfo = async(musicInfo: LX.Player.PlayMusic, mInfo: LX.Player.MusicInfo) => {
+export const initTrackInfo = async (musicInfo: LX.Player.PlayMusic, mInfo: LX.Player.MusicInfo) => {
   const tracks = buildTracks(musicInfo)
   await TrackPlayer.add(tracks).then(() => list.push(...tracks))
   const queue = await TrackPlayer.getQueue() as LX.Player.Track[]
@@ -136,8 +136,8 @@ export const initTrackInfo = async(musicInfo: LX.Player.PlayMusic, mInfo: LX.Pla
 }
 
 
-const handlePlayMusic = async(musicInfo: LX.Player.PlayMusic, url: string, time: number) => {
-// console.log(tracks, time)
+const handlePlayMusic = async (musicInfo: LX.Player.PlayMusic, url: string, time: number) => {
+  // console.log(tracks, time)
   const tracks = buildTracks(musicInfo, url)
   const track = tracks[0]
   // await updateMusicInfo(track)
@@ -185,40 +185,32 @@ export const playMusic = (musicInfo: LX.Player.PlayMusic, url: string, time: num
 // let musicId = null
 // let duration = 0
 let prevArtwork: string | undefined
-const updateMetaInfo = async(mInfo: LX.Player.MusicInfo, lyric?: string) => {
+const updateMetaInfo = async (mInfo: LX.Player.MusicInfo, lyric?: string) => {
   console.log('updateMetaInfo', lyric)
-  const isShowNotificationImage = settingState.setting['player.isShowNotificationImage']
-  // const mInfo = formatMusicInfo(musicInfo)
-  // console.log('+++++updateMusicPic+++++', track.artwork, track.duration)
-
-  // if (track.musicId == musicId) {
-  //   if (global.playInfo.musicInfo.img != null) artwork = global.playInfo.musicInfo.img
-  //   if (track.duration != null) duration = global.playInfo.duration
-  // } else {
-  //   musicId = track.musicId
-  //   artwork = global.playInfo.musicInfo.img
-  //   duration = global.playInfo.duration || 0
-  // }
-  // console.log('+++++updateMetaInfo+++++', mInfo.name)
   state.isPlaying = await TrackPlayer.getState() == State.Playing
-  let artwork = isShowNotificationImage ? mInfo.pic ?? prevArtwork : undefined
+  let artwork = mInfo.pic ?? prevArtwork
   if (mInfo.pic) prevArtwork = mInfo.pic
-  let name: string
-  let singer: string
+  let mainTitle: string
+  let artistText: string
   if (!state.isPlaying || lyric == null) {
-    name = mInfo.name ?? 'Unknow'
-    singer = mInfo.singer ?? 'Unknow'
+    mainTitle = mInfo.name ?? 'Unknow'
+    artistText = `${mInfo.singer ?? 'Unknow'}${mInfo.album ? ` · ${mInfo.album}` : ''}`
   } else {
-    name = lyric
-    singer = `${mInfo.name}${mInfo.singer ? ` - ${mInfo.singer}` : ''}`
+    mainTitle = lyric
+    artistText = `${mInfo.name}${mInfo.singer ? ` - ${mInfo.singer}` : ''}${mInfo.album ? ` · ${mInfo.album}` : ''}`
   }
   await TrackPlayer.updateNowPlayingMetadata({
-    title: name,
-    artist: singer,
-    album: mInfo.album ?? undefined,
+    title: mainTitle,
+    artist: artistText,
+    album: mainTitle, // Map title/lyric to album field for position D (header)
     artwork,
     duration: state.prevDuration || 0,
   }, state.isPlaying)
+
+  // Update home screen widget
+  const widgetTitle = mInfo.name ?? 'LX-N Music'
+  const widgetArtist = mInfo.singer ? `${mInfo.singer}${mInfo.album ? ` · ${mInfo.album}` : ''}` : '未在播放'
+  void updateWidget(widgetTitle, widgetArtist, state.isPlaying, artwork).catch(() => { })
 }
 
 
@@ -266,7 +258,7 @@ const debounceUpdateMetaInfoTools = {
     }
   },
   init() {
-    return this.debounce(async(musicInfo: LX.Player.MusicInfo, lyric?: string) => {
+    return this.debounce(async (musicInfo: LX.Player.MusicInfo, lyric?: string) => {
       this.musicInfo = musicInfo
       return this.updateMetaPromise.then(() => {
         // console.log('run')

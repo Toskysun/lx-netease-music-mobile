@@ -7,7 +7,6 @@ import {
   SONGLIST_DETAIL_SCREEN,
   SIMILAR_SONGS_SCREEN,
   COMMENT_SCREEN, ARTIST_DETAIL_SCREEN, ALBUM_DETAIL_SCREEN, DOWNLOAD_MANAGER_SCREEN,
-  // SETTING_SCREEN,
 } from './screenNames'
 
 import themeState from '@/store/theme/state'
@@ -150,45 +149,45 @@ export function pushPlayDetailScreen(componentId: string, skipAnimation = false)
             push: skipAnimation
               ? {}
               : {
-                  sharedElementTransitions: [
-                    {
-                      fromId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
-                      toId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
-                      interpolation: { type: 'spring' },
+                sharedElementTransitions: [
+                  {
+                    fromId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
+                    toId: NAV_SHEAR_NATIVE_IDS.playDetail_pic,
+                    interpolation: { type: 'spring' },
+                  },
+                ],
+                elementTransitions: [
+                  {
+                    id: NAV_SHEAR_NATIVE_IDS.playDetail_header,
+                    alpha: {
+                      from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
+                      duration: 300,
                     },
-                  ],
-                  elementTransitions: [
-                    {
-                      id: NAV_SHEAR_NATIVE_IDS.playDetail_header,
-                      alpha: {
-                        from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                        duration: 300,
-                      },
-                      translationY: {
-                        from: -32, // Animate translationY from 16dp to 0dp
-                        duration: 300,
-                      },
+                    translationY: {
+                      from: -32, // Animate translationY from 16dp to 0dp
+                      duration: 300,
                     },
-                    {
-                      id: NAV_SHEAR_NATIVE_IDS.playDetail_player,
-                      alpha: {
-                        from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
-                        duration: 300,
-                      },
-                      translationY: {
-                        from: 32, // Animate translationY from 16dp to 0dp
-                        duration: 300,
-                      },
+                  },
+                  {
+                    id: NAV_SHEAR_NATIVE_IDS.playDetail_player,
+                    alpha: {
+                      from: 0, // We don't declare 'to' value as that is the element's current alpha value, here we're essentially animating from 0 to 1
+                      duration: 300,
                     },
-                  ],
-                  // content: {
-                  //   translationX: {
-                  //     from: windowSizeTools.getSize().width,
-                  //     to: 0,
-                  //     duration: 300,
-                  //   },
-                  // },
-                },
+                    translationY: {
+                      from: 32, // Animate translationY from 16dp to 0dp
+                      duration: 300,
+                    },
+                  },
+                ],
+                // content: {
+                //   translationX: {
+                //     from: windowSizeTools.getSize().width,
+                //     to: 0,
+                //     duration: 300,
+                //   },
+                // },
+              },
             pop: {
               content: {
                 translationX: {
@@ -641,51 +640,51 @@ export function pushArtistDetailScreen(componentId: string, artistInfo: { id: st
 }
 
 export function pushAlbumDetailScreen(componentId: string, albumInfo: any) {
-    const theme = themeState.theme
-      return Navigation.push(componentId, {
-        component: {
-          name: ALBUM_DETAIL_SCREEN,
-            passProps: {
-              albumInfo,
-              },
-          options: {
-              topBar: {
-                  visible: false,
-                    height: 0,
-                  },
-              statusBar: {
-                    drawBehind: true,
-                    visible: true,
-                    style: getStatusBarStyle(theme.isDark),
-                    backgroundColor: 'transparent',
-                  },
-              layout: {
-                  componentBackgroundColor: theme['c-content-background'],
-                  },
-              animations: {
-                  push: {
-                      content: {
-                          translationX: {
-                              from: windowSizeTools.getSize().width,
-                                to: 0,
-                                duration: 200,
-                              },
-                        },
-                    },
-                  pop: {
-                      content: {
-                          translationX: {
-                              from: 0,
-                                to: windowSizeTools.getSize().width,
-                                duration: 200,
-                              },
-                        },
-                    },
-                },
-            },
+  const theme = themeState.theme
+  return Navigation.push(componentId, {
+    component: {
+      name: ALBUM_DETAIL_SCREEN,
+      passProps: {
+        albumInfo,
+      },
+      options: {
+        topBar: {
+          visible: false,
+          height: 0,
         },
-    })
-  }
+        statusBar: {
+          drawBehind: true,
+          visible: true,
+          style: getStatusBarStyle(theme.isDark),
+          backgroundColor: 'transparent',
+        },
+        layout: {
+          componentBackgroundColor: theme['c-content-background'],
+        },
+        animations: {
+          push: {
+            content: {
+              translationX: {
+                from: windowSizeTools.getSize().width,
+                to: 0,
+                duration: 200,
+              },
+            },
+          },
+          pop: {
+            content: {
+              translationX: {
+                from: 0,
+                to: windowSizeTools.getSize().width,
+                duration: 200,
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+}
 
 
 export function pushDownloadManagerScreen(componentId: string) {
@@ -731,6 +730,8 @@ export function pushDownloadManagerScreen(componentId: string) {
     },
   });
 }
+
+
 
 export function pushSimilarSongsScreen(componentId: string, similarSongs: LX.Music.MusicInfoOnline[]) {
   const theme = themeState.theme
