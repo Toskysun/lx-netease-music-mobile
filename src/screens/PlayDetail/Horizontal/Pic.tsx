@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Animated, Easing, View } from 'react-native';
+import { Animated, Easing, View, Platform } from 'react-native';
 import { usePlayerMusicInfo, useIsPlay } from '@/store/player/hook';
 import { useWindowSize } from '@/utils/hooks';
 // import { useNavigationComponentDidAppear } from '@/navigation'; // <--- 移除
@@ -21,6 +21,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   const spinValue = useRef(new Animated.Value(0)).current;
   const animationRef = useRef<Animated.CompositeAnimation | null>(null);
   const isAnimating = useRef(false);
+  const shouldForceLayerComposition = Platform.OS === 'android' && global.lx.isCarMode && isCoverSpin;
 
   const createAnimation = useCallback((value: number) => {
     return Animated.timing(spinValue, {
@@ -93,16 +94,31 @@ export default memo(({ componentId }: { componentId: string }) => {
   const imageStyle = useMemo(() => ({
     width: '100%',
     height: '100%',
-    borderRadius: imageContainerStyle.borderRadius,
-  }), [imageContainerStyle.borderRadius]);
+  }) as const, []);
+
+  const animatedCoverStyle = useMemo(() => ({
+    width: '100%',
+    height: '100%',
+    backfaceVisibility: 'hidden' as const,
+    transform: [{ rotate: spin }],
+  } as any), [spin]);
 
   let contentHeight = (winHeight - statusBarHeight - HEADER_HEIGHT) * 0.66;
   contentHeight -= contentHeight * (global.lx.fontSize - 1) * 0.2;
 
   return (
     <View style={{ ...styles.container, height: contentHeight }}>
-      <View style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}>
-        <Animated.View style={{ width: '100%', height: '100%', transform: [{ rotate: spin }] }}>
+      <View
+        collapsable={false}
+        style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}
+        renderToHardwareTextureAndroid={shouldForceLayerComposition}
+        needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+      >
+        <Animated.View
+          style={animatedCoverStyle}
+          renderToHardwareTextureAndroid={shouldForceLayerComposition}
+          needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+        >
           <Image
             url={musicInfo.pic} // 直接使用 store 中的数据
             nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic}

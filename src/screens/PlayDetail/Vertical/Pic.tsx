@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useCallback, useState } from 'react';
-import { View, Animated, Easing, TouchableWithoutFeedback } from 'react-native';
+import { View, Animated, Easing, TouchableWithoutFeedback, Platform } from 'react-native';
 import { useIsPlay, usePlayMusicInfo } from '@/store/player/hook';
 import { useWindowSize } from '@/utils/hooks';
 import { NAV_SHEAR_NATIVE_IDS } from '@/config/constant';
@@ -27,6 +27,7 @@ export default memo(({ componentId }: { componentId: string }) => {
   const menuRef = useRef<MenuType>(null);
   const coverRef = useRef<View>(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const shouldForceLayerComposition = Platform.OS === 'android' && global.lx.isCarMode && isCoverSpin;
 
   const createAnimation = useCallback((value: number) => {
     return Animated.timing(spinValue, {
@@ -94,8 +95,14 @@ export default memo(({ componentId }: { componentId: string }) => {
   const imageStyle = useMemo(() => ({
     width: '100%',
     height: '100%',
-    borderRadius: imageContainerStyle.borderRadius,
-  } as any), [imageContainerStyle.borderRadius]);
+  } as const), []);
+
+  const animatedCoverStyle = useMemo(() => ({
+    width: '100%',
+    height: '100%',
+    backfaceVisibility: 'hidden' as const,
+    transform: [{ rotate: spin }],
+  } as any), [spin]);
 
   const menus = useMemo((): Menus => [
     { action: 'download_song', label: '下载歌曲' },
@@ -165,8 +172,18 @@ export default memo(({ componentId }: { componentId: string }) => {
   return (
     <View style={styles.container}>
       <TouchableWithoutFeedback onLongPress={handleLongPress}>
-        <View ref={coverRef} style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}>
-          <Animated.View style={{ width: '100%', height: '100%', transform: [{ rotate: spin }] }}>
+        <View
+          ref={coverRef}
+          collapsable={false}
+          style={[styles.content, imageContainerStyle, { overflow: 'hidden' }]}
+          renderToHardwareTextureAndroid={shouldForceLayerComposition}
+          needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+        >
+          <Animated.View
+            style={animatedCoverStyle}
+            renderToHardwareTextureAndroid={shouldForceLayerComposition}
+            needsOffscreenAlphaCompositing={shouldForceLayerComposition}
+          >
             <Image
               url={(musicInfo.musicInfo as LX.Music.MusicInfo)?.meta?.picUrl} // 直接使用 store 中的数据
               nativeID={NAV_SHEAR_NATIVE_IDS.playDetail_pic}
