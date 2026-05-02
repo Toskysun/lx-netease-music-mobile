@@ -230,10 +230,11 @@ export const handleDownload = async (musicInfo: LX.Music.MusicInfo, quality: LX.
         //   description: '正在下载文件...',
         // },
       })
-      const headers = {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54',
-          Referer: 'https://music.163.com/',
-      }
+      const headers = musicInfo.source === 'wy'
+        ? { 'User-Agent': '' }
+        : {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 Edg/108.0.1462.54',
+          }
       const data = await downloader.fetch('GET', url, headers)
       const filePath = data.path()
 

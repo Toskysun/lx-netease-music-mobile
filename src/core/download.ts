@@ -17,8 +17,13 @@ const taskQueue: DownloadTask[] = [];
 let isProcessing = false;
 const DOWNLOAD_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Mobile Safari/537.36',
-  Referer: 'https://music.163.com/',
 };
+const WY_MEDIA_HEADERS = {
+  'User-Agent': '',
+}
+const getDownloadHeaders = (task: DownloadTask) => {
+  return task.musicInfo.source === 'wy' ? WY_MEDIA_HEADERS : DOWNLOAD_HEADERS
+}
 let currentDownloadTask: any | null = null;
 
 const processQueue = async () => {
@@ -75,7 +80,7 @@ const startDownload = async (task: DownloadTask) => {
     const downloadTask = RNFetchBlob.config({
       path: task.filePath,
       fileCache: true,
-    }).fetch('GET', url, DOWNLOAD_HEADERS);
+    }).fetch('GET', url, getDownloadHeaders(task));
 
     currentDownloadTask = downloadTask;
     downloadTask.progress({ interval: 500 }, (written, total) => {
