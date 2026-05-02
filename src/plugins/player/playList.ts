@@ -37,10 +37,29 @@ const formatMusicInfo = (musicInfo: LX.Player.PlayMusic) => {
   }
 }
 
+const getTrackSource = (musicInfo: LX.Player.PlayMusic) => {
+  return 'progress' in musicInfo ? musicInfo.metadata.musicInfo.source : musicInfo.source
+}
+
 const getTrackHeaders = (musicInfo: LX.Player.PlayMusic, url?: string) => {
-  if (!url || !/^https?:\/\//.test(url)) return undefined
-  const source = 'progress' in musicInfo ? musicInfo.metadata.musicInfo.source : musicInfo.source
+  if (!url || !/^https?:\/\//.test(url) || wyMediaUrlRxp.test(url)) return undefined
+  const source = getTrackSource(musicInfo)
   return source === 'wy' ? wyStreamHeaders : undefined
+}
+
+const getTrackUserAgent = (musicInfo: LX.Player.PlayMusic, url?: string) => {
+  if (!url || !/^https?:\/\//.test(url)) return undefined
+  if (getTrackSource(musicInfo) === 'wy' && wyMediaUrlRxp.test(url)) return ''
+  return defaultUserAgent
+}
+
+const buildTrackExtra = (musicInfo: LX.Player.PlayMusic, url?: string) => {
+  const headers = getTrackHeaders(musicInfo, url)
+  const userAgent = getTrackUserAgent(musicInfo, url)
+  return {
+    ...(userAgent != null ? { userAgent } : {}),
+    ...(headers ? { headers } : {}),
+  }
 }
 
 const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'], duration?: LX.Player.Track['duration']): LX.Player.Track[] => {
@@ -48,7 +67,7 @@ const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'
   const track = [] as LX.Player.Track[]
   const album = mInfo.album || undefined
   const artwork = mInfo.pic && httpRxp.test(mInfo.pic) ? mInfo.pic : undefined
-  const headers = typeof url === 'string' ? getTrackHeaders(musicInfo, url) : undefined
+  const extra = typeof url === 'string' ? buildTrackExtra(musicInfo, url) : {}
   if (url) {
     track.push({
       id: `${mInfo.id}__//${Math.random()}__//${url}`,
@@ -57,8 +76,7 @@ const buildTracks = (musicInfo: LX.Player.PlayMusic, url?: LX.Player.Track['url'
       artist: mInfo.singer || 'Unknow',
       album,
       artwork,
-      userAgent: defaultUserAgent,
-      headers,
+      ...extra,
       musicId: mInfo.id,
       // original: { ...musicInfo },
       duration,
