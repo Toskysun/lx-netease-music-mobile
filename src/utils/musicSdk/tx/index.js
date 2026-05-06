@@ -24,7 +24,10 @@ const tx = {
     // let singer = songInfo.singer.indexOf('、') > -1 ? songInfo.singer.split('、')[0] : songInfo.singer
     return lyric.getLyric(songInfo.songmid)
   },
-  getPic(songInfo) {
+  async getPic(songInfo) {
+    if (songInfo.albumId) {
+      return `https://y.gtimg.cn/music/photo_new/T002R500x500M000${songInfo.albumId}.jpg`
+    }
     return apis('tx').getPic(songInfo)
   },
   getMusicDetailPageUrl(songInfo) {

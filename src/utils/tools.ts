@@ -367,6 +367,10 @@ export const resetIgnoringBatteryOptimizationCheck = async () => {
   return removeData(storageDataPrefix.ignoringBatteryOptimizationTipEnable)
 }
 
+export const formatMusicName = (format: string, name: string, singer: string) => {
+  return format.replace('歌手', singer).replace('歌名', name)
+}
+
 export const shareMusic = (
   shareType: LX.ShareType,
   downloadFileName: LX.AppSetting['download.fileName'],
@@ -378,7 +382,7 @@ export const shareMusic = (
     musicInfo.source == 'local'
       ? ''
       : (musicSdk[musicInfo.source]?.getMusicDetailPageUrl(toOldMusicInfo(musicInfo)) ?? '')
-  const musicTitle = downloadFileName.replace('歌名', name).replace('歌手', singer)
+  const musicTitle = formatMusicName(downloadFileName, name, singer)
   switch (shareType) {
     case 'system':
       void shareText(

@@ -106,3 +106,12 @@ export const aesDecryptSync = (text: string, key: string, vi: string, mode: AES_
   // console.log(sourceFilePath, targetFilePath)
   return CryptoModule.aesDecryptSync(text, key, vi, mode)
 }
+
+export const hashSHA1 = async (text: string): Promise<string> => {
+  try {
+    return await CryptoModule.sha1(text)
+  } catch (error) {
+    console.error('生成SHA1出现问题:', error)
+    throw error
+  }
+}
