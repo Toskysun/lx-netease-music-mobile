@@ -584,6 +584,8 @@
   "version_title_update": "🚀 App update 🚀",
   "version_btn_check_update": "Check for Updates",
   "setting_version_auto_check_update": "Automatically check for updates on startup",
+  "quality_select_title": "Select Quality",
+  "setting_player_desktop_lyric": "Show Desktop Lyric",
   "128k": "128K",
   "320k": "320K",
   "flac": "FLAC",

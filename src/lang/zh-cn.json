@@ -590,6 +590,8 @@
   "version_title_update": "🚀 软件更新 🚀",
   "version_btn_check_update": "检查更新",
   "setting_version_auto_check_update": "启动时自动检查更新",
+  "quality_select_title": "选择音质",
+  "setting_player_desktop_lyric": "显示桌面歌词",
   "128k": "128K",
   "320k": "320K",
   "flac": "FLAC",

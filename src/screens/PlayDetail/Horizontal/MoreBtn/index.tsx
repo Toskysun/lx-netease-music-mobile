@@ -3,11 +3,15 @@ import { View } from 'react-native'
 import PlayModeBtn from './PlayModeBtn'
 import MusicAddBtn from './MusicAddBtn'
 import TimeoutExitBtn from './TimeoutExitBtn'
+import DesktopLyricBtn from './DesktopLyricBtn'
+import QualitySelectBtn from './QualitySelectBtn'
 
 export default () => {
   return (
     <View style={styles.container}>
       <TimeoutExitBtn />
+      <DesktopLyricBtn />
+      <QualitySelectBtn />
       <MusicAddBtn />
       <PlayModeBtn />
     </View>

@@ -107,7 +107,7 @@ const Menu = ({
     const bottomSpace = windowSize.height - buttonPosition.y - buttonPosition.h - 20
     const rightSpace = windowSize.width - buttonPosition.x - menuWidth
     const showInBottom = bottomSpace >= menuHeight
-    const showInRight = rightSpace >= menuWidth
+    const showInRight = rightSpace >= 0
     const frameStyle: {
       height: number
       width: number
