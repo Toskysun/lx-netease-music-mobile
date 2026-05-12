@@ -9,6 +9,7 @@ import DailyRec from '../Views/DailyRec'
 import MyPlaylist from '../Views/MyPlaylist'
 import SubscribedAlbums from "@/screens/Home/Views/SubscribedAlbums";
 import FollowedArtists from "@/screens/Home/Views/FollowedArtists";
+import PlayHistory from '../Views/PlayHistory'
 
 const Main = () => {
   const [id, setId] = useState(commonState.navActiveId)
@@ -27,6 +28,8 @@ const Main = () => {
 
   const component = useMemo(() => {
     switch (id) {
+      case 'nav_play_history':
+        return <PlayHistory />
       case 'nav_daily_rec':
         return <DailyRec />
       case 'nav_my_playlist':

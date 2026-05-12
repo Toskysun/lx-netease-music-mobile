@@ -18,6 +18,7 @@ export const ITEM_HEIGHT = scaleSizeH(LIST_ITEM_HEIGHT)
 const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   const t = useI18n()
   let info: { type: BadgeType | null; text: string } = { type: null, text: '' }
+  const qualitys = (musicInfo.meta as LX.Music.MusicInfoMeta_online)._qualitys ?? {}
   // if (musicInfo.meta._qualitys.master) {
   //   info.type = 'secondary'
   //   info.text = t('quality_lossless_master')
@@ -28,14 +29,14 @@ const useQualityTag = (musicInfo: LX.Music.MusicInfoOnline) => {
   //   info.type = 'secondary'
   //   info.text = t('quality_lossless_atmos')
   // } else
-  if (musicInfo.meta._qualitys.hires) {
+  if (qualitys.hires) {
     info.type = 'secondary'
     info.text = t('quality_lossless_24bit')
-  } else if (musicInfo.meta._qualitys.flac) {
+  } else if (qualitys.flac) {
     // info.type = 'secondary'
     info.type = 'sq'
     info.text = t('quality_lossless')
-  } else if (musicInfo.meta._qualitys['320k']) {
+  } else if (qualitys['320k']) {
     info.type = 'hq'
     info.text = t('quality_high_quality')
   }
@@ -103,6 +104,7 @@ export default memo(
     }
 
     const tagInfo = useQualityTag(item)
+    const historySource = (item as LX.Music.MusicInfoOnline & { playHistorySource?: LX.Player.PlayHistorySource }).playHistorySource
     const singer = `${item.singer}${isShowAlbumName && item.meta.albumName ? `·${item.meta.albumName}` : ''}`
 
     return (
@@ -116,12 +118,8 @@ export default memo(
       >
         <TouchableOpacity
           style={styles.listItemLeft}
-          onPress={() => {
-            onPress(item, index)
-          }}
-          onLongPress={() => {
-            onLongPress(item, index)
-          }}
+          onPress={() => onPress(item, index)}
+          onLongPress={() => onLongPress(item, index)}
         >
 
 
@@ -146,6 +144,7 @@ export default memo(
               {tagInfo.type ? <Badge type={tagInfo.type}>{tagInfo.text}</Badge> : null}
               {item.meta.fee === 1 ? <Badge type="vip">VIP</Badge> : null}
               {item.source === 'wy' && item.meta.originCoverType === 2 ? <Badge type="normal">cover</Badge> : null}
+              {historySource ? <Badge type="normal">{historySource}</Badge> : null}
               <Text
                 style={styles.listItemSingleText}
                 size={11}
@@ -179,10 +178,12 @@ export default memo(
     return !!(
       prevProps.item === nextProps.item &&
       prevProps.index === nextProps.index &&
+      prevProps.showSource === nextProps.showSource &&
       prevProps.isShowAlbumName === nextProps.isShowAlbumName &&
       prevProps.isShowInterval === nextProps.isShowInterval &&
       prevProps.listId === nextProps.listId &&
       prevProps.playingId === nextProps.playingId &&
+      (prevProps.item as any).playHistorySource === (nextProps.item as any).playHistorySource &&
       nextProps.selectedList.includes(nextProps.item) ==
       prevProps.selectedList.includes(nextProps.item) &&
       prevProps.showCover === nextProps.showCover

@@ -166,6 +166,10 @@ export class AppEvent extends Event {
     this.emit('musicInfoUpdate', musicInfo)
   }
 
+  playHistoryUpdated() {
+    this.emit('playHistoryUpdated')
+  }
+
   changeMenuVisible(visible: boolean) {
     this.emit('changeMenuVisible', visible)
   }
@@ -181,7 +185,8 @@ export class AppEvent extends Event {
   async jumpListPosition() {
     const playMusicInfo = playerState.playMusicInfo
     let listId = playMusicInfo.listId
-    const musicInfo = 'progress' in playMusicInfo.musicInfo ? playMusicInfo.musicInfo.metadata.musicInfo : playMusicInfo.musicInfo
+    const rawMusicInfo = playMusicInfo.musicInfo
+    const musicInfo = rawMusicInfo && 'progress' in rawMusicInfo ? rawMusicInfo.metadata.musicInfo : rawMusicInfo
 
     if (!listId || !musicInfo) {
       if (commonState.navActiveId === 'nav_love') {

@@ -32,7 +32,9 @@ const Item = ({ id, name }: { id: NAV_ID_Type; name: string }) => {
 export default memo(() => {
   const t = useI18n();
   const menuList = useMemo(() => {
-    return NAV_MENUS.map((item) => ({ id: item.id, name: t(item.id) }));
+    return NAV_MENUS
+      .filter(item => item.id !== 'nav_play_history')
+      .map((item) => ({ id: item.id, name: t(item.id) }));
   }, [t]);
 
   return (

@@ -18,6 +18,7 @@ import { throttle } from './common'
 const fontSizeKey = storageDataPrefix.fontSize
 const themeKey = storageDataPrefix.theme
 const playInfoStorageKey = storageDataPrefix.playInfo
+const playHistoryStorageKey = storageDataPrefix.playHistory
 const userListKey = storageDataPrefix.userList
 const viewPrevStateKey = storageDataPrefix.viewPrevState
 const listScrollPositionKey = storageDataPrefix.listScrollPosition
@@ -459,6 +460,14 @@ export const savePlayInfo = async (playInfo: LX.Player.SavedPlayInfo) => {
 // 获取上次关闭时的当前歌曲播放信息
 export const getPlayInfo = async () => {
   return getData<LX.Player.SavedPlayInfo | null>(playInfoStorageKey)
+}
+
+export const savePlayHistory = async (history: LX.Player.PlayHistoryItem[]) => {
+  return saveData(playHistoryStorageKey, history)
+}
+
+export const getPlayHistory = async () => {
+  return getData<LX.Player.PlayHistoryItem[] | null>(playHistoryStorageKey).then((history) => history ?? [])
 }
 
 let selectedManagedFolder: string | null = ''

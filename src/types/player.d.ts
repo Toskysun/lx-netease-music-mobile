@@ -77,6 +77,18 @@ declare global {
         tempMeta?: LX.List.MyTempListInfo['meta'] | null
       }
 
+      type PlayHistorySource = 'Search' | 'Rec' | 'Detail' | 'List'
+
+      interface PlayHistoryItem {
+        id: string
+        musicInfo: LX.Music.MusicInfo
+        playedAt: number
+        playTime: number
+        maxTime: number
+        listId: string | null
+        source: PlayHistorySource
+      }
+
       interface Track extends RNTrack {
         musicId: string
         // original: PlayMusic

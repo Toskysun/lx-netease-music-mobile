@@ -234,7 +234,7 @@ const List = forwardRef<ListType, ListProps>(
         isShowInterval={isShowInterval}
       />
     )
-    const getkey: FlatListType['keyExtractor'] = (item) => item.id
+    const getkey: FlatListType['keyExtractor'] = (item) => (item as any).playHistoryId ?? item.id
     const getItemLayout: FlatListType['getItemLayout'] = (data, index) => {
       return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
     }

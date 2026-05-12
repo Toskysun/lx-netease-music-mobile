@@ -2,6 +2,7 @@ import { memo, useState, useMemo, useEffect } from 'react'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 import ImageBackground from '@/components/common/ImageBackground'
 import Image from '@/components/common/Image'
+import ImagePreviewModal from '@/components/common/ImagePreviewModal'
 import Text from '@/components/common/Text'
 import { useTheme } from '@/store/theme/hook'
 import { createStyle, toast } from '@/utils/tools'
@@ -12,15 +13,23 @@ import { useIsWyArtistFollowed } from '@/store/user/hook'
 import { addWyFollowedArtist, removeWyFollowedArtist } from '@/store/user/action'
 import { type FollowedArtistInfo } from '@/store/user/state'
 
-export default memo(({ artist, onFollow, componentId }) => {
+interface Props {
+  artist: any
+  onFollow?: () => void
+  componentId: string
+}
+
+export default memo(({ artist, onFollow, componentId }: Props) => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
   const [isDescExpanded, setDescExpanded] = useState(false)
+  const [isPreviewVisible, setPreviewVisible] = useState(false)
   const isFollowed = useIsWyArtistFollowed(artist.id)
 
   const artistName = artist?.name || ''
   const artistAlias = artist?.alias?.length ? ` ${artist.alias[0]}` : ''
   const description = artist?.briefDesc || ''
+  const artistPic = artist?.avatar || artist?.cover
 
   const toggleFollow = () => {
     if (!artist.name) {
@@ -43,7 +52,7 @@ export default memo(({ artist, onFollow, componentId }) => {
       } else {
         removeWyFollowedArtist(artist.id)
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(`操作失败: ${err.message}`)
     })
   }
@@ -59,7 +68,9 @@ export default memo(({ artist, onFollow, componentId }) => {
     <View style={{ paddingTop: statusBarHeight }}>
       <ImageBackground source={artist?.cover ? { uri: artist.cover } : null} style={styles.headerContainer} blurRadius={10}>
         <View style={styles.overlay}>
-          <Image url={artist?.avatar || artist?.cover} style={styles.avatar} />
+          <TouchableOpacity activeOpacity={0.85} disabled={!artistPic} onPress={() => setPreviewVisible(true)}>
+            <Image url={artistPic} style={styles.avatar} />
+          </TouchableOpacity>
           <View style={styles.infoContainer}>
             <Text style={styles.name} size={18} color="#FFF" numberOfLines={2}>
               {artistName}
@@ -82,6 +93,12 @@ export default memo(({ artist, onFollow, componentId }) => {
           </TouchableOpacity>
         </View>
       </ImageBackground>
+      <ImagePreviewModal
+        visible={isPreviewVisible}
+        url={artistPic}
+        name={artistName || 'artist'}
+        onClose={() => setPreviewVisible(false)}
+      />
     </View>
   )
 })

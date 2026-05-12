@@ -266,6 +266,8 @@ export const updateOptions = async (
   // Position 4: SkipToNext     → Next track (standard)
   // Stop is not shown in notification, but handles swipe-to-dismiss → exit app
   return TrackPlayer.updateOptions({
+    stopWithApp: true,
+
     capabilities: [
       Capability.Play,
       Capability.Pause,

@@ -58,6 +58,11 @@ export default ({ componentId }: Props) => {
         return false
       }
 
+      if (commonState.navActiveId === 'nav_play_history') {
+        setNavActiveId(commonState.lastNavActiveId)
+        return true
+      }
+
       const now = Date.now()
       if (lastBackPressed.current && now - lastBackPressed.current < 2000) {
         BackHandler.exitApp()

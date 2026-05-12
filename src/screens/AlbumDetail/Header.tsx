@@ -1,26 +1,33 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import Image from '@/components/common/Image';
+import ImagePreviewModal from '@/components/common/ImagePreviewModal';
 import Text from '@/components/common/Text';
 import { useTheme } from '@/store/theme/hook';
 import { createStyle, toast } from '@/utils/tools';
 import { dateFormat } from '@/utils/common';
 import { useStatusbarHeight } from '@/store/common/hook';
 import { Icon } from '@/components/common/Icon';
-import { navigations, pop } from '@/navigation';
-import commonState from '@/store/common/state';
+import { navigations } from '@/navigation';
 import { useIsWyAlbumSubscribed } from '@/store/user/hook';
 import wyApi from '@/utils/musicSdk/wy/user';
 import { addWySubscribedAlbum, removeWySubscribedAlbum } from '@/store/user/action';
 import { type SubscribedAlbumInfo } from '@/store/user/state';
 
+interface Props {
+  albumInfo: any
+  componentId: string
+}
 
-export default memo(({ albumInfo, componentId }) => {
+export default memo(({ albumInfo, componentId }: Props) => {
   const theme = useTheme();
   const statusBarHeight = useStatusbarHeight();
   const isSubscribed = useIsWyAlbumSubscribed(albumInfo.id);
+  const [isPreviewVisible, setPreviewVisible] = useState(false);
+  const albumPic = albumInfo.picUrl || albumInfo.img;
 
-  const handleArtistPress = (artist) => {
+  const handleArtistPress = (artist: any) => {
+    if (!artist.id) return;
     navigations.pushArtistDetailScreen(componentId, { id: String(artist.id), name: artist.name });
   };
 
@@ -45,24 +52,26 @@ export default memo(({ albumInfo, componentId }) => {
       } else {
         removeWySubscribedAlbum(albumInfo.id);
       }
-    }).catch(err => {
+    }).catch((err: any) => {
       toast(`操作失败: ${err.message}`);
     });
   };
 
 
-  const artists = albumInfo.artists?.map((artist, index) => (
-    <TouchableOpacity key={artist.id} onPress={() => handleArtistPress(artist)}>
-      <Text style={styles.artistName} size={14} color="rgba(255,255,255,0.9)">
-        {artist.name}{index < albumInfo.artists.length - 1 ? ' / ' : ''}
-      </Text>
-    </TouchableOpacity>
+  const artists = albumInfo.artists?.map((artist: any, index: number) => (
+      <TouchableOpacity key={artist.id || `${artist.name}_${index}`} onPress={() => handleArtistPress(artist)}>
+        <Text style={styles.artistName} size={14} color="rgba(255,255,255,0.9)">
+          {artist.name}{index < albumInfo.artists.length - 1 ? ' / ' : ''}
+        </Text>
+      </TouchableOpacity>
   ))
 
   return (
     <View style={{ paddingTop: statusBarHeight, backgroundColor: 'rgba(0,0,0,0.2)' }}>
       <View style={styles.headerContainer}>
-        <Image url={albumInfo.picUrl || albumInfo.img} style={styles.albumArt} />
+        <TouchableOpacity activeOpacity={0.85} disabled={!albumPic} onPress={() => setPreviewVisible(true)}>
+          <Image url={albumPic} style={styles.albumArt} />
+        </TouchableOpacity>
         <View style={styles.infoContainer}>
           <Text style={styles.albumName} size={18} color="#FFF" numberOfLines={2}>{albumInfo.name}</Text>
           <View style={styles.artistContainer}>{artists}</View>
@@ -74,6 +83,12 @@ export default memo(({ albumInfo, componentId }) => {
           <Icon name={isSubscribed ? 'love-filled' : 'love'} color={isSubscribed ? theme['c-liked'] : '#fff'} size={18} />
         </TouchableOpacity>
       </View>
+      <ImagePreviewModal
+        visible={isPreviewVisible}
+        url={albumPic}
+        name={albumInfo.name || 'album'}
+        onClose={() => setPreviewVisible(false)}
+      />
     </View>
   )
 })
@@ -92,8 +107,8 @@ const styles = createStyle({
     alignItems: 'center',
   },
   albumArt: {
-    width: 120,
-    height: 120,
+    width: 96,
+    height: 96,
     borderRadius: 8,
   },
   infoContainer: {
