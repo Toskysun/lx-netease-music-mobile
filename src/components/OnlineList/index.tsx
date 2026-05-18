@@ -31,6 +31,7 @@ import {removeWyLikedSong, updateWySubscribedPlaylistTrackCount} from "@/store/u
 import {clearListDetailCache} from "@/core/songlist.ts"
 import commonState from '@/store/common/state'
 import {useWySubscribedPlaylists} from "@/store/user/hook.ts";
+import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
 
 export interface OnlineListProps {
   onRefresh: ListProps['onRefresh']
@@ -82,6 +83,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(
     const listMusicMultiAddRef = useRef<ListAddMultiType>(null)
     const listMenuRef = useRef<ListMenuType>(null)
     const musicDownloadModalRef = useRef<MusicDownloadModalType>(null)
+    const similarSongsModalRef = useRef<SimilarSongsModalType>(null)
     const t = useI18n()
     const subscribedPlaylists = useWySubscribedPlaylists()
 
@@ -255,6 +257,9 @@ export default forwardRef<OnlineListType, OnlineListProps>(
           onRemove={handleRemoveMusic}
           onArtistDetail={handleShowArtist}
           onAlbumDetail={handleShowAlbum}
+          onSimilarSongs={(info) => {
+            similarSongsModalRef.current?.show(info.musicInfo)
+          }}
           onMusicSourceDetail={(info) => {
             void handleShowMusicSourceDetail(info.musicInfo)
           }}
@@ -267,6 +272,7 @@ export default forwardRef<OnlineListType, OnlineListProps>(
           }}
           onPlayMv={handlePlayMv}
         />
+        <SimilarSongsModal ref={similarSongsModalRef} />
         {}
       </View>
     )

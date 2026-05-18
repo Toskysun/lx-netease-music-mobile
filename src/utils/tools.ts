@@ -589,9 +589,16 @@ export interface RowInfo {
   rowWidth: `${number}%`
 }
 
-export type RowInfoType = 'full' | 'medium'
+export type RowInfoType = 'full' | 'medium' | 'single'
 
 export const getRowInfo = (type: RowInfoType = 'full'): RowInfo => {
+  if (type == 'single') {
+    return {
+      rowNum: undefined,
+      rowWidth: '100%',
+    }
+  }
+
   const win = windowSizeTools.getSize()
   let isMultiRow = isHorizontalMode(win.width, win.height)
   if (type == 'medium' && win.width / win.height < 1.8) isMultiRow = false

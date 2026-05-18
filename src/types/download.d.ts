@@ -21,6 +21,7 @@ declare namespace LX {
       filePath: string;
       fileName: string;
       isForceCookie?: boolean;
+      isRemoteSynced?: boolean;
     }
   }
 }

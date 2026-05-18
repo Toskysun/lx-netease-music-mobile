@@ -23,6 +23,7 @@ export interface ListMenuProps {
   onDislikeMusic: (selectInfo: SelectInfo) => void
   onArtistDetail: (selectInfo: SelectInfo) => void
   onAlbumDetail: (selectInfo: SelectInfo) => void
+  onSimilarSongs: (selectInfo: SelectInfo) => void
   onLike: (selectInfo: SelectInfo) => void
   onPlayMv: (selectInfo: SelectInfo) => void
   onMove?: (selectInfo: SelectInfo) => void
@@ -82,6 +83,7 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
       wyMenuItems.push(
         { action: 'artistDetail', label: t('artist_detail') },
         { action: 'albumDetail', label: t('album_detail') },
+        { action: 'similarSongs', label: '相似歌曲' },
       );
       if (selectInfo.musicInfo.meta.mv && menuSetting.playMV) {
         wyMenuItems.push({ action: 'playMv', label: '播放MV' });
@@ -126,6 +128,9 @@ export default forwardRef<ListMenuType, ListMenuProps>((props: ListMenuProps, re
         break
       case 'albumDetail':
         props.onAlbumDetail(selectInfo)
+        break
+      case 'similarSongs':
+        props.onSimilarSongs(selectInfo)
         break
       case 'musicSourceDetail':
         props.onMusicSourceDetail(selectInfo)

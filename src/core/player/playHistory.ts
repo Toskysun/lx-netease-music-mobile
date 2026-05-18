@@ -1,4 +1,5 @@
 import { LIST_IDS } from '@/config/constant'
+import { markListsChanged } from '@/core/sync/webdavSync'
 import { getPlayHistory, savePlayHistory } from '@/utils/data'
 
 const MAX_HISTORY_SIZE = 5000
@@ -65,6 +66,7 @@ const addPlayHistoryInternal = async ({
 
   await savePlayHistory(history)
   global.app_event.playHistoryUpdated()
+  markListsChanged()
 }
 
 export const addPlayHistory = (params: AddPlayHistoryParams) => {

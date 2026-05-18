@@ -2,7 +2,23 @@ import { getListMusics } from '@/core/list';
 import listState from '@/store/list/state';
 import settingState from '@/store/setting/state';
 import { LIST_IDS } from '@/config/constant';
-import {getUserApiList, getUserApiScript} from "@/utils/data.ts";
+import {getPlayHistory, getUserApiList, getUserApiScript} from "@/utils/data.ts";
+import { normalizeDownloadTasksForSync } from '@/utils/data/download';
+import downloadState from '@/store/download/state';
+
+const SENSITIVE_SETTING_KEYS: Array<keyof LX.AppSetting> = [
+  'common.wy_cookie',
+  'common.yt_cookie',
+  'sync.webdav.password',
+];
+
+export const filterSensitiveSettingsForSync = (settings: Partial<LX.AppSetting>) => {
+  const nextSettings = { ...settings };
+  for (const key of SENSITIVE_SETTING_KEYS) {
+    delete nextSettings[key];
+  }
+  return nextSettings;
+};
 
 export const getAllDataForSync = async () => {
   const defaultList = await getListMusics(listState.defaultList.id);
@@ -13,7 +29,9 @@ export const getAllDataForSync = async () => {
     userList.push({ ...list, list: await getListMusics(list.id) });
   }
   const lists = { defaultList, loveList, userList, tempList };
-  const settings = settingState.setting;
+  const playHistory = await getPlayHistory();
+  const downloadTasks = normalizeDownloadTasksForSync(downloadState.tasks);
+  const settings = filterSensitiveSettingsForSync(settingState.setting);
 
   const userApiList = await getUserApiList();
   const userApiScripts: Record<string, string> = {};
@@ -25,5 +43,5 @@ export const getAllDataForSync = async () => {
     scripts: userApiScripts,
   };
 
-  return { lists, settings, userApis };
+  return { lists, playHistory, downloadTasks, settings, userApis };
 };

@@ -1,6 +1,6 @@
 import * as webdav from '@/utils/webdav';
 import { overwriteListFull } from '@/core/list';
-import { getAllDataForSync } from './syncHelpers';
+import { filterSensitiveSettingsForSync, getAllDataForSync } from './syncHelpers';
 import { confirmDialog, toast } from '@/utils/tools';
 import { updateSetting } from '@/core/common';
 import settingState from '@/store/setting/state';
@@ -9,9 +9,30 @@ import { debounce } from '@/utils/common';
 import { getOperationQueue, clearOperationQueue, loadOperationQueue } from './opQueue';
 import { applyListOperation } from '@/utils/listManage';
 import { overwriteUserApis } from "@/core/userApi.ts";
+import { getPlayHistory, savePlayHistory } from '@/utils/data';
+import {
+  normalizeDownloadTasksForSync,
+  normalizeRemoteSyncedDownloadTasks,
+  saveDownloadTasks,
+} from '@/utils/data/download';
+import downloadState from '@/store/download/state';
 
 let listsChanged = false;
 let isSyncing = false;
+let nextListsUploadExtraData: ListsSyncExtraData | null = null;
+
+interface ListsSyncFile {
+  version?: string
+  lastModified: number
+  data: LX.List.ListDataFull
+  playHistory?: LX.Player.PlayHistoryItem[]
+  downloadTasks?: LX.Download.DownloadTask[]
+}
+
+interface ListsSyncExtraData {
+  playHistory: LX.Player.PlayHistoryItem[]
+  downloadTasks: LX.Download.DownloadTask[]
+}
 
 // 初始化时加载操作队列
 void loadOperationQueue();
@@ -64,14 +85,122 @@ async function uploadUserApis(path: string): Promise<number> {
 
 async function uploadLists(path: string, listsData: LX.List.ListDataFull): Promise<number> {
   const timestamp = Date.now();
+  const { playHistory, downloadTasks } = nextListsUploadExtraData ?? await getAllDataForSync();
+  nextListsUploadExtraData = null;
   const dataObject = {
     version: '2',
     lastModified: timestamp,
     data: listsData,
+    playHistory,
+    downloadTasks,
   };
   await webdav.uploadFile(path, JSON.stringify(dataObject));
   updateSetting({ 'sync.webdav.lastSyncTimeLists': timestamp });
   return timestamp;
+}
+
+const normalizeRemoteListsData = (remoteData: ListsSyncFile | any): ListsSyncFile => ({
+  ...remoteData,
+  data: remoteData.data,
+  lastModified: remoteData.lastModified ?? 0,
+  playHistory: Array.isArray(remoteData.playHistory) ? remoteData.playHistory : undefined,
+  downloadTasks: Array.isArray(remoteData.downloadTasks) ? remoteData.downloadTasks : undefined,
+});
+
+const mergePlayHistory = (
+  localHistory: LX.Player.PlayHistoryItem[],
+  remoteHistory?: LX.Player.PlayHistoryItem[]
+) => {
+  const historyMap = new Map<string, LX.Player.PlayHistoryItem>();
+  for (const item of remoteHistory ?? []) historyMap.set(item.id, item);
+  for (const item of localHistory) historyMap.set(item.id, item);
+  return [...historyMap.values()]
+    .sort((a, b) => b.playedAt - a.playedAt)
+    .slice(0, 5000);
+};
+
+const mergeDownloadTasks = (
+  localTasks: LX.Download.DownloadTask[],
+  remoteTasks?: LX.Download.DownloadTask[]
+) => {
+  const taskMap = new Map<string, LX.Download.DownloadTask>();
+  for (const task of remoteTasks ?? []) taskMap.set(task.id, task);
+  for (const task of localTasks) taskMap.set(task.id, task);
+  return normalizeDownloadTasksForSync([...taskMap.values()].sort((a, b) => b.createdAt - a.createdAt));
+};
+
+const mergeDownloadTasksForLocal = (
+  localTasks: LX.Download.DownloadTask[],
+  remoteTasks?: LX.Download.DownloadTask[]
+) => {
+  const taskMap = new Map<string, LX.Download.DownloadTask>();
+  for (const task of normalizeRemoteSyncedDownloadTasks(remoteTasks ?? [])) taskMap.set(task.id, task);
+  for (const task of localTasks) taskMap.set(task.id, task);
+  return [...taskMap.values()].sort((a, b) => b.createdAt - a.createdAt);
+};
+
+const getRemoteDownloadTasksForLocal = (remoteTasks: LX.Download.DownloadTask[]) => {
+  const localTaskMap = new Map(downloadState.tasks.map(task => [task.id, task]));
+  return normalizeRemoteSyncedDownloadTasks(remoteTasks)
+    .map(task => {
+      const localTask = localTaskMap.get(task.id);
+      if (!localTask) return task;
+      return {
+        ...task,
+        status: localTask.status,
+        errorMsg: localTask.errorMsg,
+        progress: localTask.progress,
+        metadataStatus: localTask.metadataStatus,
+        isRemoteSynced: localTask.isRemoteSynced,
+      };
+    })
+    .sort((a, b) => b.createdAt - a.createdAt);
+};
+
+const getMergedExtraData = async (remoteData: ListsSyncFile): Promise<ListsSyncExtraData> => {
+  const localHistory = await getPlayHistory();
+  return {
+    playHistory: mergePlayHistory(localHistory, remoteData.playHistory),
+    downloadTasks: mergeDownloadTasks(downloadState.tasks, remoteData.downloadTasks),
+  };
+};
+
+const getLocalExtraDataForSync = async (): Promise<ListsSyncExtraData> => ({
+  playHistory: await getPlayHistory(),
+  downloadTasks: normalizeDownloadTasksForSync(downloadState.tasks),
+});
+
+const hasLocalExtraDataChanges = async (remoteData: ListsSyncFile) => {
+  const localExtraData = await getLocalExtraDataForSync();
+  const remoteExtraData: ListsSyncExtraData = {
+    playHistory: remoteData.playHistory ?? [],
+    downloadTasks: normalizeDownloadTasksForSync(remoteData.downloadTasks ?? []),
+  };
+  return JSON.stringify(localExtraData) !== JSON.stringify(remoteExtraData);
+};
+
+async function applySyncedExtraData(remoteData: ListsSyncFile) {
+  if (Array.isArray(remoteData.playHistory)) {
+    await savePlayHistory(remoteData.playHistory);
+    global.app_event.playHistoryUpdated();
+  }
+  if (Array.isArray(remoteData.downloadTasks)) {
+    const tasks = getRemoteDownloadTasksForLocal(remoteData.downloadTasks);
+    downloadState.tasks = tasks;
+    await saveDownloadTasks(tasks);
+    global.app_event.download_list_changed();
+  }
+}
+
+async function applyMergedExtraData(remoteData: ListsSyncFile) {
+  const localHistory = await getPlayHistory();
+  await savePlayHistory(mergePlayHistory(localHistory, remoteData.playHistory));
+  global.app_event.playHistoryUpdated();
+
+  const tasks = mergeDownloadTasksForLocal(downloadState.tasks, remoteData.downloadTasks);
+  downloadState.tasks = tasks;
+  await saveDownloadTasks(tasks);
+  global.app_event.download_list_changed();
 }
 
 async function uploadSettings(path: string): Promise<number> {
@@ -148,7 +277,7 @@ export async function manualDownloadSettingsAndApis() {
     const remoteSettingsContent = await webdav.downloadFile(remoteSettingsPath);
     if (remoteSettingsContent) {
       const remoteSettingsData = JSON.parse(remoteSettingsContent);
-      updateSetting(remoteSettingsData.data);
+      updateSetting(filterSensitiveSettingsForSync(remoteSettingsData.data));
     } else {
       toast('云端未找到设置文件，跳过设置同步');
     }
@@ -227,8 +356,9 @@ export async function manualDownloadLists() {
     const remoteListsPath = getRemoteListsFilePath();
     const remoteListsContent = await webdav.downloadFile(remoteListsPath);
     if (remoteListsContent) {
-      const remoteData = JSON.parse(remoteListsContent);
+      const remoteData = normalizeRemoteListsData(JSON.parse(remoteListsContent));
       await overwriteListFull(remoteData.data);
+      await applySyncedExtraData(remoteData);
       await clearOperationQueue();
       updateSetting({ 'sync.webdav.lastSyncTimeLists': remoteData.lastModified });
       toast('歌单下载同步完成！');
@@ -269,7 +399,7 @@ export async function triggerWebDAVSync(isManual = false) {
       await clearOperationQueue();
       if (isManual) toast('歌单上传成功！');
     } else {
-      const remoteData = JSON.parse(remoteListsContent);
+      const remoteData = normalizeRemoteListsData(JSON.parse(remoteListsContent));
       const remoteTimestamp = remoteData.lastModified;
       const localTimestamp = settingState.setting['sync.webdav.lastSyncTimeLists'] ?? 0;
 
@@ -293,6 +423,7 @@ export async function triggerWebDAVSync(isManual = false) {
         } else if (userChoice === false) { // 下载云端数据
           log.info('[WebDAV Sync] User chose to download remote state during first sync.');
           await overwriteListFull(remoteData.data);
+          await applySyncedExtraData(remoteData);
           await clearOperationQueue();
           updateSetting({ 'sync.webdav.lastSyncTimeLists': remoteTimestamp });
           toast('已从云端同步歌单数据到本地！');
@@ -306,7 +437,7 @@ export async function triggerWebDAVSync(isManual = false) {
 
       const hasRemoteUpdate = remoteTimestamp > localTimestamp;
       const localOpQueue = getOperationQueue();
-      const hasLocalChanges = localOpQueue.length > 0;
+      const hasLocalChanges = localOpQueue.length > 0 || listsChanged || await hasLocalExtraDataChanges(remoteData);
 
       if (hasRemoteUpdate) {
         log.info('[WebDAV Sync] Remote is newer. Starting merge process.');
@@ -314,6 +445,7 @@ export async function triggerWebDAVSync(isManual = false) {
         let conflictOccurred = false;
 
         if (hasLocalChanges) {
+          nextListsUploadExtraData = await getMergedExtraData(remoteData);
           log.info(`[WebDAV Sync] Applying ${localOpQueue.length} local operations onto remote data.`);
           try {
             for (const op of localOpQueue) {
@@ -326,6 +458,7 @@ export async function triggerWebDAVSync(isManual = false) {
         }
 
         if (conflictOccurred) {
+          nextListsUploadExtraData = null;
           const userChoice = await confirmDialog({
             title: '同步冲突',
             message: '云端和本地的歌单修改无法自动合并。请选择要保留的版本：\n\n为防止意外，建议在操作前先备份当前歌单。',
@@ -341,6 +474,7 @@ export async function triggerWebDAVSync(isManual = false) {
           } else if (userChoice === false) { // 用户选择 "云端覆盖本地"
             log.info('[WebDAV Sync] Conflict resolved by user: Force pulling remote state.');
             await overwriteListFull(remoteData.data);
+            await applySyncedExtraData(remoteData);
             await clearOperationQueue();
             updateSetting({ 'sync.webdav.lastSyncTimeLists': remoteTimestamp });
             toast('已从云端同步歌单，本地更改已放弃！');
@@ -353,8 +487,10 @@ export async function triggerWebDAVSync(isManual = false) {
           await overwriteListFull(mergedData); // 应用合并后的数据到本地
           if (hasLocalChanges) {
             await uploadLists(remoteListsPath, mergedData); // 将合并后的结果上传
+            await applyMergedExtraData(remoteData);
             if (isManual) toast('歌单合并同步成功！');
           } else {
+            await applySyncedExtraData(remoteData);
             updateSetting({ 'sync.webdav.lastSyncTimeLists': remoteTimestamp });
             if (isManual) toast('歌单已从云端同步！');
           }

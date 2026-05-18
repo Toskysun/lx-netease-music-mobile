@@ -19,6 +19,7 @@ export interface PlayDetailMenuProps {
   onDislikeMusic: (selectInfo: SelectInfo) => void
   onArtistDetail: (selectInfo: SelectInfo) => void
   onAlbumDetail: (selectInfo: SelectInfo) => void
+  onSimilarSongs: (selectInfo: SelectInfo) => void
   onLike: (selectInfo: SelectInfo) => void
   onPlayMv: (selectInfo: SelectInfo) => void
 }
@@ -69,6 +70,7 @@ export default forwardRef<PlayDetailMenuType, PlayDetailMenuProps>((props, ref) 
       menuItems.push({ action: 'like', label: isLiked ? '❤️ 取消喜欢' : '🤍 喜欢',})
       menuItems.push({ action: 'artistDetail', label: t('artist_detail') });
       menuItems.push({ action: 'albumDetail', label: t('album_detail') });
+      menuItems.push({ action: 'similarSongs', label: '相似歌曲' });
 
       if (musicInfo.meta.mv && menuSetting.playMV) {
         menuItems.push({ action: 'playMv', label: '播放MV' })
@@ -102,6 +104,9 @@ export default forwardRef<PlayDetailMenuType, PlayDetailMenuProps>((props, ref) 
         break;
       case 'albumDetail':
         props.onAlbumDetail(selectInfo);
+        break;
+      case 'similarSongs':
+        props.onSimilarSongs(selectInfo);
         break;
       case 'musicSourceDetail':
         props.onMusicSourceDetail(selectInfo);

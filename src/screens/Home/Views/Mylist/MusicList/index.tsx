@@ -38,6 +38,7 @@ import {useSettingValue} from "@/store/setting/hook.ts";
 import {updateSetting} from "@/core/common.ts";
 import {getMvUrl} from "@/utils/musicSdk/wy/mv.js";
 import commonState from '@/store/common/state';
+import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
 
 export default () => {
   const activeListRef = useRef<ActiveListType>(null)
@@ -55,6 +56,7 @@ export default () => {
   const metadataEditTypeRef = useRef<MetadataEditType>(null)
   const listMenuRef = useRef<ListMenuType>(null)
   const musicToggleModalRef = useRef<MusicToggleModalType>(null)
+  const similarSongsModalRef = useRef<SimilarSongsModalType>(null)
   const layoutHeightRef = useRef<number>(0)
   const isShowMultipleModeBar = useRef(false)
   const isShowSearchBarModeBar = useRef(false)
@@ -273,10 +275,14 @@ export default () => {
         onToggleSource={(info) => musicToggleModalRef.current?.show(info)}
         onArtistDetail={handleShowArtist}
         onAlbumDetail={handleShowAlbum}
+        onSimilarSongs={(info) => {
+          similarSongsModalRef.current?.show(info.musicInfo)
+        }}
         onPlayMv={handlePlayMv}
       />
       <MetadataEditModal ref={metadataEditTypeRef} onUpdate={handleUpdateMetadata} />
       <MusicToggleModal ref={musicToggleModalRef} />
+      <SimilarSongsModal ref={similarSongsModalRef} />
     </View>
   )
 }

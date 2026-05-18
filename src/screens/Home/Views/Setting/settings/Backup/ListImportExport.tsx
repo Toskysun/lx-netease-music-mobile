@@ -36,7 +36,7 @@ export default forwardRef<ListImportExportType, {}>((props, ref) => {
       selectInfoRef.current.action = 'import'
       if (visible) {
         choosePathRef.current?.show({
-          title: global.i18n.t('list_import_part_desc'),
+          title: global.i18n.t('setting_backup_all_import_desc'),
           dirOnly: false,
           filter: LXM_FILE_EXT_RXP,
         })
@@ -44,7 +44,7 @@ export default forwardRef<ListImportExportType, {}>((props, ref) => {
         setVisible(true)
         requestAnimationFrame(() => {
           choosePathRef.current?.show({
-            title: global.i18n.t('list_import_part_desc'),
+            title: global.i18n.t('setting_backup_all_import_desc'),
             dirOnly: false,
             filter: LXM_FILE_EXT_RXP,
           })
@@ -55,7 +55,7 @@ export default forwardRef<ListImportExportType, {}>((props, ref) => {
       selectInfoRef.current.action = 'export'
       if (visible) {
         choosePathRef.current?.show({
-          title: global.i18n.t('list_export_part_desc'),
+          title: global.i18n.t('setting_backup_all_export_desc'),
           dirOnly: true,
           filter: LXM_FILE_EXT_RXP,
         })
@@ -63,7 +63,7 @@ export default forwardRef<ListImportExportType, {}>((props, ref) => {
         setVisible(true)
         requestAnimationFrame(() => {
           choosePathRef.current?.show({
-            title: global.i18n.t('list_export_part_desc'),
+            title: global.i18n.t('setting_backup_all_export_desc'),
             dirOnly: true,
             filter: LXM_FILE_EXT_RXP,
           })

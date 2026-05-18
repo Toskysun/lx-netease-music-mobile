@@ -1,4 +1,4 @@
-import { memo, useState, useMemo, useEffect } from 'react'
+import { memo, useState, useMemo, useRef } from 'react'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 import ImageBackground from '@/components/common/ImageBackground'
 import Image from '@/components/common/Image'
@@ -12,6 +12,7 @@ import wyApi from '@/utils/musicSdk/wy/user'
 import { useIsWyArtistFollowed } from '@/store/user/hook'
 import { addWyFollowedArtist, removeWyFollowedArtist } from '@/store/user/action'
 import { type FollowedArtistInfo } from '@/store/user/state'
+import SimilarArtistsModal, { type SimilarArtistsModalType } from './SimilarArtistsModal'
 
 interface Props {
   artist: any
@@ -22,6 +23,7 @@ interface Props {
 export default memo(({ artist, onFollow, componentId }: Props) => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
+  const similarArtistsModalRef = useRef<SimilarArtistsModalType>(null)
   const [isDescExpanded, setDescExpanded] = useState(false)
   const [isPreviewVisible, setPreviewVisible] = useState(false)
   const isFollowed = useIsWyArtistFollowed(artist.id)
@@ -91,6 +93,14 @@ export default memo(({ artist, onFollow, componentId }: Props) => {
           <TouchableOpacity style={styles.followButton} onPress={toggleFollow}>
             <Icon name={isFollowed ? 'love-filled' : 'love'} color={isFollowed ? theme['c-liked'] : '#fff'} size={18} />
           </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.82}
+            style={styles.similarButton}
+            onPress={() => similarArtistsModalRef.current?.show({ id: artist.id, name: artistName })}
+          >
+            <Text size={12} color="#fff" numberOfLines={1}>相似歌手</Text>
+            <Icon name="chevron-right" color="#fff" size={12} />
+          </TouchableOpacity>
         </View>
       </ImageBackground>
       <ImagePreviewModal
@@ -99,6 +109,7 @@ export default memo(({ artist, onFollow, componentId }: Props) => {
         name={artistName || 'artist'}
         onClose={() => setPreviewVisible(false)}
       />
+      <SimilarArtistsModal ref={similarArtistsModalRef} componentId={componentId} />
     </View>
   )
 })
@@ -127,7 +138,8 @@ const styles = createStyle({
     flexDirection: 'column',
     justifyContent: 'center',
     height: '100%',
-    paddingVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 34,
   },
   name: {
     fontWeight: 'bold',
@@ -145,5 +157,19 @@ const styles = createStyle({
     marginLeft: 10,
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  similarButton: {
+    position: 'absolute',
+    right: 15,
+    bottom: 12,
+    minWidth: 82,
+    height: 30,
+    paddingHorizontal: 10,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
 })

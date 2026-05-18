@@ -296,7 +296,7 @@ export class AppEvent extends Event {
   download_progress_update(payload: { id: string, progress: DownloadTask['progress'] }) {
     this.emit('download_progress_update', payload)
   }
-  download_status_update(payload: { id: string, status: DownloadTask['status'] }) {
+  download_status_update(payload: { id: string, status: DownloadTask['status'], errorMsg?: string }) {
     this.emit('download_status_update', payload)
   }
   download_metadata_update(payload: { id: string, metadataStatus: DownloadTask['metadataStatus'] }) {
