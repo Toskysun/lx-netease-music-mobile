@@ -12,6 +12,7 @@ import CommentBtn from './CommentBtn'
 import Btn from './Btn'
 import SettingPopup, { type SettingPopupType } from '../../components/SettingPopup'
 import DesktopLyricBtn from './DesktopLyricBtn'
+import { isOneDriveMusicInfo } from '@/core/oneDrive/utils'
 
 export const HEADER_HEIGHT = scaleSizeH(_HEADER_HEIGHT)
 
@@ -91,6 +92,8 @@ const Title = () => {
 
 export default memo(() => {
   const popupRef = useRef<SettingPopupType>(null)
+  const playMusicInfo = usePlayMusicInfo()
+  const isOneDrive = isOneDriveMusicInfo(playMusicInfo.musicInfo)
   const back = () => {
     void pop(commonState.componentIds[commonState.componentIds.length - 1]?.id!)
   }
@@ -105,7 +108,7 @@ export default memo(() => {
         </TouchableOpacity>
         <Title />
         <DesktopLyricBtn />
-        <CommentBtn />
+        {isOneDrive ? null : <CommentBtn />}
         <Btn icon="slider" onPress={showSetting} />
       </View>
       <SettingPopup ref={popupRef} position="left" direction="horizontal" />

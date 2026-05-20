@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ComponentRef, type ReactNode } from 'react'
 import {Keyboard, View} from 'react-native'
 import Search from '../Views/Search'
 import SongList from '../Views/SongList'
@@ -21,6 +21,7 @@ import {NAV_MENUS, type NAV_ID_Type} from "@/config/constant.ts";
 import {useSettingValue} from "@/store/setting/hook.ts";
 import PlayHistory from '../Views/PlayHistory'
 import { useTheme } from '@/store/theme/hook'
+import OneDrive from '../Views/OneDrive'
 
 const hideKeys = ['list.isShowAlbumName', 'list.isShowInterval', 'theme.fontShadow'] as Readonly<
   Array<keyof LX.AppSetting>
@@ -338,6 +339,42 @@ const SubscribedAlbumsPage = () => {
   return visible ? component : null;
 };
 
+const OneDrivePage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_onedrive')
+  const component = useMemo(() => <OneDrive />, [])
+  useEffect(() => {
+    let currentId: CommonState['navActiveId'] = commonState.navActiveId
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      currentId = id
+      if (id == 'nav_onedrive') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    const handleHide = () => {
+      if (currentId != 'nav_setting') return
+      setVisible(false)
+    }
+    const handleConfigUpdated = (keys: Array<keyof LX.AppSetting>) => {
+      if (keys.some((k) => hideKeys.includes(k))) handleHide()
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+    global.state_event.on('themeUpdated', handleHide)
+    global.state_event.on('languageChanged', handleHide)
+    global.state_event.on('configUpdated', handleConfigUpdated)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+      global.state_event.off('themeUpdated', handleHide)
+      global.state_event.off('languageChanged', handleHide)
+      global.state_event.off('configUpdated', handleConfigUpdated)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+
 const SettingPage = () => {
   const [visible, setVisible] = useState(commonState.navActiveId == 'nav_setting')
   const component = useMemo(() => <Setting />, [])
@@ -360,8 +397,8 @@ const SettingPage = () => {
 
 const Main = () => {
   const pagerViewRef = useRef<ComponentRef<typeof PagerView>>(null);
-  const navStatus = useSettingValue('common.navStatus'); // 获取菜单显示状态
   const [activeNavId, setActiveNavIdState] = useState(commonState.navActiveId)
+  const navStatus = useSettingValue('common.navStatus'); // 获取菜单显示状态
 
   // 根据 navStatus 动态生成可见的菜单项、viewMap 和 indexMap
   const visibleNavs = useMemo(() => {
@@ -426,7 +463,7 @@ const Main = () => {
 
   // 根据 visibleNavs 动态渲染 PagerView 的子组件
   const pages = useMemo(() => {
-    const pageComponents = {
+    const pageComponents: Partial<Record<NAV_ID_Type, ReactNode>> = {
       nav_search: <SearchPage />,
       nav_songlist: <SongListPage />,
       nav_top: <LeaderboardPage />,
@@ -435,12 +472,13 @@ const Main = () => {
       nav_followed_artists: <FollowedArtistsPage />,
       nav_subscribed_albums: <SubscribedAlbumsPage />,
       nav_my_playlist: <MyPlaylistPage />,
+      nav_onedrive: <OneDrivePage />,
       nav_setting: <SettingPage />,
     };
 
     return visibleNavs.map(nav => (
       <View collapsable={false} key={nav.id} style={styles.pageStyle}>
-        {pageComponents[nav.id]}
+        {pageComponents[nav.id] ?? null}
       </View>
     ));
   }, [visibleNavs]);

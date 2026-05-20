@@ -59,6 +59,7 @@ export default memo(
     isShowInterval,
     listId,
     showCover = true,
+    hideMenu = false,
   }: {
     item: LX.Music.MusicInfoOnline
     index: number
@@ -77,6 +78,7 @@ export default memo(
     playingId?: string | null;
     listId?: string
     showCover?: boolean
+    hideMenu?: boolean
   }) => {
     const theme = useTheme()
     const isPlaying = playingId === item.id;
@@ -168,9 +170,11 @@ export default memo(
           </TouchableOpacity>
         ) : null}
 
-        <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
-          <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
-        </TouchableOpacity>
+        {hideMenu ? null : (
+          <TouchableOpacity onPress={handleShowMenu} ref={moreButtonRef} style={styles.moreButton}>
+            <Icon name="dots-vertical" style={{ color: theme['c-350'] }} size={12} />
+          </TouchableOpacity>
+        )}
       </View>
     )
   },
@@ -183,6 +187,7 @@ export default memo(
       prevProps.isShowInterval === nextProps.isShowInterval &&
       prevProps.listId === nextProps.listId &&
       prevProps.playingId === nextProps.playingId &&
+      prevProps.hideMenu === nextProps.hideMenu &&
       (prevProps.item as any).playHistorySource === (nextProps.item as any).playHistorySource &&
       nextProps.selectedList.includes(nextProps.item) ==
       prevProps.selectedList.includes(nextProps.item) &&

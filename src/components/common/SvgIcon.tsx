@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import Svg, { Path, Rect, Line, Circle, G } from 'react-native-svg'
+import Svg, { Path, Rect, Line, Circle } from 'react-native-svg'
 import { scaleSizeW } from '@/utils/pixelRatio'
 
 interface SvgIconProps {
@@ -67,6 +67,19 @@ const AlbumDiscIcon = ({ size, color }: { size: number; color: string }) => (
   </Svg>
 )
 
+const OneDriveIcon = ({ size, color }: { size: number; color: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M6.6 19.35h11.2c2.62 0 4.7-2.04 4.7-4.62 0-2.24-1.6-4.11-3.72-4.52-.65-2.98-3.09-5.21-5.97-5.21-2.4 0-4.58 1.55-5.58 3.96a5.26 5.26 0 0 0-1.55-.24C3.05 8.72.9 11 .9 13.79c0 3.11 2.33 5.56 5.7 5.56z"
+      stroke={color}
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  </Svg>
+)
+
 const HeartbeatIcon = ({ size, color }: { size: number; color: string }) => (
   <Svg width={size} height={size} viewBox="0 0 1165 1024" fill="none">
     <Path
@@ -94,6 +107,8 @@ export const SvgIcon = memo(({ name, size = 15, rawSize, color = '#000' }: SvgIc
       return <ArtistIcon size={finalSize} color={color} />
     case 'album-disc':
       return <AlbumDiscIcon size={finalSize} color={color} />
+    case 'onedrive':
+      return <OneDriveIcon size={finalSize} color={color} />
     case 'heartbeat':
       return <HeartbeatIcon size={finalSize} color={color} />
     default:

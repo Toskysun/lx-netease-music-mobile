@@ -13,6 +13,11 @@ import {
   getPicUrl as getLocalPicUrl,
   getLyricInfo as getLocalLyricInfo,
 } from './local'
+import {
+  getMusicUrl as getOneDriveMusicUrl,
+  getPicUrl as getOneDrivePicUrl,
+  getLyricInfo as getOneDriveLyricInfo,
+} from '@/core/oneDrive/music'
 
 export const getMusicUrl = async ({
   musicInfo,
@@ -30,6 +35,9 @@ export const getMusicUrl = async ({
   if ('progress' in musicInfo) {
     return getDownloadMusicUrl({ musicInfo, isRefresh, onToggleSource, allowToggleSource })
   } else if (musicInfo.source == 'local') {
+    if ('oneDrive' in musicInfo.meta) {
+      return getOneDriveMusicUrl({ musicInfo: musicInfo as LX.OneDrive.MusicInfo, isRefresh })
+    }
     return getLocalMusicUrl({ musicInfo, isRefresh, onToggleSource, allowToggleSource })
   } else {
     return getOnlineMusicUrl({ musicInfo, isRefresh, quality, onToggleSource, allowToggleSource })
@@ -50,6 +58,9 @@ export const getPicPath = async ({
   if ('progress' in musicInfo) {
     return getDownloadPicUrl({ musicInfo, isRefresh, listId, onToggleSource })
   } else if (musicInfo.source == 'local') {
+    if ('oneDrive' in musicInfo.meta) {
+      return getOneDrivePicUrl({ musicInfo: musicInfo as LX.OneDrive.MusicInfo, isRefresh, listId })
+    }
     return getLocalPicUrl({ musicInfo, isRefresh, listId, onToggleSource })
   } else {
     return getOnlinePicUrl({ musicInfo, isRefresh, listId, onToggleSource })
@@ -68,6 +79,9 @@ export const getLyricInfo = async ({
   if ('progress' in musicInfo) {
     return getDownloadLyricInfo({ musicInfo, isRefresh, onToggleSource })
   } else if (musicInfo.source == 'local') {
+    if ('oneDrive' in musicInfo.meta) {
+      return getOneDriveLyricInfo({ musicInfo: musicInfo as LX.OneDrive.MusicInfo, isRefresh })
+    }
     return getLocalLyricInfo({ musicInfo, isRefresh, onToggleSource })
   } else {
     return getOnlineLyricInfo({ musicInfo, isRefresh, onToggleSource })

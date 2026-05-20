@@ -10,6 +10,7 @@ import MyPlaylist from '../Views/MyPlaylist'
 import SubscribedAlbums from "@/screens/Home/Views/SubscribedAlbums";
 import FollowedArtists from "@/screens/Home/Views/FollowedArtists";
 import PlayHistory from '../Views/PlayHistory'
+import OneDrive from '../Views/OneDrive'
 
 const Main = () => {
   const [id, setId] = useState(commonState.navActiveId)
@@ -42,6 +43,8 @@ const Main = () => {
         return <FollowedArtists />
       case 'nav_subscribed_albums':
         return <SubscribedAlbums />
+      case 'nav_onedrive':
+        return <OneDrive />
       case 'nav_love':
         return <Mylist />
       case 'nav_setting':

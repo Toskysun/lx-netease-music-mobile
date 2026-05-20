@@ -7,7 +7,14 @@ import { useSettingValue } from '@/store/setting/hook';
 import { updateSetting } from '@/core/common';
 import { createStyle } from '@/utils/tools';
 
-const SettingItem = ({ settingKey, label }: { settingKey: keyof LX.AppSetting; label: string }) => {
+type MenuSettingKey =
+  | 'menu.playLater'
+  | 'menu.share'
+  | 'menu.playMV'
+  | 'menu.songDetail'
+  | 'menu.dislike'
+
+const SettingItem = ({ settingKey, label }: { settingKey: MenuSettingKey; label: string }) => {
   const value = useSettingValue(settingKey);
   const handleChange = (newValue: boolean) => {
     updateSetting({ [settingKey]: newValue });

@@ -32,6 +32,7 @@ import settingState from '@/store/setting/state';
 import commonState from '@/store/common/state';
 import SimilarSongsModal, { type SimilarSongsModalType } from '@/components/SimilarSongsModal'
 import { getMvUrl } from '@/utils/musicSdk/wy/mv.js'
+import { isOneDriveMusicInfo } from '@/core/oneDrive/utils'
 
 export interface PlayerPlaylistType {
   show: () => void;
@@ -121,6 +122,7 @@ export default forwardRef<PlayerPlaylistType, {}>((props, ref) => {
 
   const renderItem = ({ item, index }: { item: LX.Player.PlayMusic, index: number }) => {
     const originalMusicInfo = ('progress' in item ? item.metadata.musicInfo : item);
+    const isOneDrive = isOneDriveMusicInfo(originalMusicInfo);
 
     // 将所有类型的 musicInfo 转换为 OnlineListItem 能安全渲染的结构
     const renderableMusicInfo: LX.Music.MusicInfoOnline = {
@@ -163,6 +165,7 @@ export default forwardRef<PlayerPlaylistType, {}>((props, ref) => {
         isShowInterval={isShowInterval}
         listId={listIdForIcon ?? undefined}
         showCover={showCover}
+        hideMenu={isOneDrive}
       />
     );
   };
