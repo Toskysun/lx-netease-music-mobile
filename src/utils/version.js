@@ -8,13 +8,13 @@ const abis = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'x86', 'universal']
 
 const address = [
   [
-    `https://raw.githubusercontent.com/${author.name}/${name}/master/publish/version.json`,
+    `https://raw.githubusercontent.com/${author.name}/${name}/main/publish/version.json`,
     'direct',
   ],
   // ['https://registry.npmjs.org/lx-music-mobile-version-info/latest', 'npm'],
-  [`https://cdn.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
-  [`https://fastly.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
-  [`https://gcore.jsdelivr.net/gh/${author.name}/${name}/publish/version.json`, 'direct'],
+  [`https://cdn.jsdelivr.net/gh/${author.name}/${name}@main/publish/version.json`, 'direct'],
+  [`https://fastly.jsdelivr.net/gh/${author.name}/${name}@main/publish/version.json`, 'direct'],
+  [`https://gcore.jsdelivr.net/gh/${author.name}/${name}@main/publish/version.json`, 'direct'],
   // ['https://registry.npmmirror.com/lx-music-mobile-version-info/latest', 'npm'],
   // ['http://cdn.stsky.cn/lx-music/mobile/version.json', 'direct'],
 ]
