@@ -553,6 +553,7 @@
   "user_api_note": "TIP: Although we have isolated the API script's running environment as much as possible, importing API scripts containing malicious behaviors may still affect your system. Please import them with caution.",
   "user_api_readme": "API writing instructions: ",
   "user_api_remove_tip": "Do you really want to remove \"{name}\"?",
+  "user_api_reorder_tip": "Long-press and drag to reorder",
   "user_api_title": "Music API Management (EXPERIMENTAL)",
   "user_api_update_alert": "Music API \"{name}\" found new version",
   "user_api_update_alert_open_url": "Open update address",

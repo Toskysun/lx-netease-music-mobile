@@ -612,6 +612,11 @@ export const setUserApiAllowShowUpdateAlert = async (id: string, enable: boolean
   targetApi.allowShowUpdateAlert = enable
   await saveData(userApiPrefix, userApis)
 }
+export const setUserApiList = async (list: LX.UserApi.UserApiInfo[]) => {
+  userApis = [...list]
+  await saveData(userApiPrefix, userApis)
+  return [...userApis]
+}
 
 export const getLastSelectQuality = async (): Promise<LX.Quality> => {
   return (await getData<LX.Quality>(lastSelectQualityKey)) ?? '128k'

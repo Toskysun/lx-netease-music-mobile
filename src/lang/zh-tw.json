@@ -524,6 +524,7 @@
   "user_api_note": "提示：雖然我們已經盡可能地隔離了 API 腳本的執行環境，但匯入包含惡意行為的 API 腳本仍可能會影響你的系統，請謹慎匯入。",
   "user_api_readme": "API 編寫說明：",
   "user_api_remove_tip": "你真的要移除「{name}」嗎？",
+  "user_api_reorder_tip": "長按拖動可調整順序",
   "user_api_title": "自訂來源 API 管理（實驗性）",
   "user_api_update_alert": "自訂來源 API「{name}」發現新版本",
   "user_api_update_alert_open_url": "開啟更新位址",
