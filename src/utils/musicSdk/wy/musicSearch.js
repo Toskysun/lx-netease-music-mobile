@@ -1,6 +1,44 @@
 import { httpFetch } from '../../request'
 import { sizeFormate, formatPlayTime } from '../../index'
 import { eapiRequest } from './utils/index'
+import settingState from '@/store/setting/state'
+import musicDetailApi from './musicDetail'
+
+const NETEASE_SONG_ID_RXP = /(?:https?:\/\/)?(?:y\.)?music\.163\.com\/(?:m\/)?song\?id=(\d+)/i
+
+const safeDecode = value => {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+const extractSongId = value => {
+  if (!value) return null
+  const text = safeDecode(value)
+  const match = text.match(NETEASE_SONG_ID_RXP) || value.match(NETEASE_SONG_ID_RXP)
+  return match ? match[1] : null
+}
+
+const getFirstSerpApiSongId = result => {
+  const list = Array.isArray(result?.organic_results) ? result.organic_results : []
+  for (const item of list) {
+    const songId = extractSongId(item.link) || extractSongId(item.redirect_link)
+    if (songId) return songId
+  }
+  return null
+}
+
+const uniqueListBySongId = list => {
+  const ids = new Set()
+  return list.filter(item => {
+    const id = String(item.songmid || item.meta?.songId || item.id || '')
+    if (!id || ids.has(id)) return false
+    ids.add(id)
+    return true
+  })
+}
 
 export default {
   limit: 30,
@@ -26,6 +64,30 @@ export default {
         limit,
     })
     return searchRequest.promise.then(({ body }) => body)
+  },
+
+  async searchBySerpApi(str) {
+    const apiKey = settingState.setting['common.wy_serpapi_key']?.trim()
+    if (!apiKey) return []
+
+    try {
+      const query = `${str} site:music.163.com`
+      const requestObj = httpFetch(
+        `https://serpapi.com/search.json?engine=google&google_domain=google.com&hl=zh-cn&num=10&q=${encodeURIComponent(query)}&api_key=${encodeURIComponent(apiKey)}`,
+        { method: 'get', timeout: 20000 }
+      )
+      const { body, statusCode } = await requestObj.promise
+      if (statusCode !== 200) throw new Error(`SerpApi status ${statusCode}`)
+
+      const songId = getFirstSerpApiSongId(body)
+      if (!songId) return []
+
+      const detail = await musicDetailApi.getList([songId])
+      return detail?.list || []
+    } catch (error) {
+      console.log('wy serpapi search failed:', error.message)
+      return []
+    }
   },
 
   getSinger(singers) {
@@ -193,26 +255,31 @@ export default {
           _qualitys: _types,
           fee: item.fee,
           originCoverType: item.originCoverType,
+          noCopyrightRcmd: item.noCopyrightRcmd,
           mv: item.mv,
         },
       }
     })
   },
 
-  search(str, page = 1, limit, retryNum = 0) {
+  search(str, page = 1, limit, retryNum = 0, options = {}) {
     if (++retryNum > 3) return Promise.reject(new Error('try max num'))
     if (limit == null) limit = this.limit
-    return this.musicSearch(str, page, limit).then((result) => {
+    return this.musicSearch(str, page, limit).then(async(result) => {
       if (!result || result.code !== 200) {
         console.log('retry search:', retryNum)
-        return this.search(str, page, limit, retryNum)
+        return this.search(str, page, limit, retryNum, options)
       }
       let list = this.handleResult(result.data.resources || [])
-      if (!list) return this.search(str, page, limit, retryNum)
+      if (!list) return this.search(str, page, limit, retryNum, options)
+      if (page === 1 && options.enableSerpApi) {
+        const serpList = await this.searchBySerpApi(str)
+        if (serpList.length) list = uniqueListBySongId([...serpList, ...list])
+      }
 
-      this.total = result.data.totalCount || 0
+      this.total = Math.max(result.data.totalCount || 0, list.length)
       this.page = page
-      this.allPage = Math.ceil(this.total / this.limit)
+      this.allPage = this.total ? Math.ceil(this.total / this.limit) : 0
 
       return {
         list,
@@ -223,7 +290,7 @@ export default {
       }
     }).catch(err => {
       console.log('搜索错误，准备重试:', err.message, '次数:', retryNum);
-      return this.search(str, page, limit, retryNum)
+      return this.search(str, page, limit, retryNum, options)
     });
   },
 

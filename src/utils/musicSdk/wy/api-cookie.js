@@ -2,7 +2,26 @@ import { httpFetch } from '../../request'
 import { weapi } from './utils/crypto'
 import settingState from '@/store/setting/state'
 
-export const getMusicUrl = (songInfo, type, retryNum = 0) => {
+const getSongId = songInfo => songInfo.songmid || songInfo.meta?.songId
+
+const getNoCopyrightRcmdSongId = songInfo => {
+  const noCopyrightRcmd = songInfo.noCopyrightRcmd || songInfo.meta?.noCopyrightRcmd
+  if (!noCopyrightRcmd) return null
+
+  return noCopyrightRcmd.songId || noCopyrightRcmd.id || noCopyrightRcmd.song?.id || null
+}
+
+const createFallbackSongInfo = (songInfo, songId) => ({
+  ...songInfo,
+  songmid: songId,
+  meta: {
+    ...songInfo.meta,
+    songId,
+    originalSongId: getSongId(songInfo),
+  },
+})
+
+export const getMusicUrl = (songInfo, type, retryNum = 0, noCopyrightFallbackUsed = false) => {
   if (retryNum > 2) {
     const requestObj = {}
     requestObj.promise = Promise.reject(new Error('try max num'))
@@ -10,7 +29,7 @@ export const getMusicUrl = (songInfo, type, retryNum = 0) => {
     return requestObj
   }
 
-  const songId = songInfo.songmid || songInfo.meta.songId
+  const songId = getSongId(songInfo)
   const targetPrefer = {
     level: 'standard', // standard, higher, exhigh, lossless, hires, jyeffect, jymaster
     encodeType: 'flac',
@@ -63,6 +82,23 @@ export const getMusicUrl = (songInfo, type, retryNum = 0) => {
 
     const data = body.data[0]
     if (!data.url) {
+      const fallbackSongId = getNoCopyrightRcmdSongId(songInfo)
+      console.log(`wy api-cookie no url for songId: ${songId}, noCopyrightRcmd songId: ${fallbackSongId || 'none'}`)
+      if (
+        fallbackSongId &&
+        !noCopyrightFallbackUsed &&
+        String(fallbackSongId) !== String(songId)
+      ) {
+        console.log(`wy api-cookie fallback to noCopyrightRcmd songId: ${songId} -> ${fallbackSongId}`)
+        const newRequestObj = getMusicUrl(
+          createFallbackSongInfo(songInfo, fallbackSongId),
+          type,
+          0,
+          true
+        )
+        requestObj.cancelHttp = newRequestObj.cancelHttp
+        return newRequestObj.promise
+      }
       if (data.fee === 1 || data.fee === 4) {
         return Promise.reject(new Error('VIP 歌曲或无版权，无法通过 Cookie 获取'))
       }
@@ -80,7 +116,7 @@ export const getMusicUrl = (songInfo, type, retryNum = 0) => {
     }
 
     console.log('wy api-cookie getMusicUrl error, retrying...', retryNum + 1)
-    const newRequestObj = getMusicUrl(songInfo, type, retryNum + 1)
+    const newRequestObj = getMusicUrl(songInfo, type, retryNum + 1, noCopyrightFallbackUsed)
     requestObj.cancelHttp = newRequestObj.cancelHttp
     return newRequestObj.promise
   })

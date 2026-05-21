@@ -180,7 +180,7 @@ const blobToBuffer = (blob) => {
 }
 
 const fetchData = (url, { timeout = 15000, ...options }) => {
-  console.log('---start---', url)
+  console.log('---start---', url.replace(/([?&](?:api_key|key|token)=)[^&]+/gi, '$1***'))
 
   const controller = new global.AbortController()
   let id = BackgroundTimer.setTimeout(() => {

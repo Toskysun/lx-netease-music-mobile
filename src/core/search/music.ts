@@ -34,7 +34,9 @@ export const search = async (
           (musicSdk[source]?.musicSearch.search(
             text,
             page,
-            searchMusicState.listInfos.all.limit
+            searchMusicState.listInfos.all.limit,
+            0,
+            { enableSerpApi: false }
           ) as Promise<SearchResult>) ?? Promise.reject(new Error('source not found: ' + source))
         ).catch((error: any) => {
           console.log(error)
@@ -59,7 +61,7 @@ export const search = async (
     listInfo.key = key
     return (
       musicSdk[sourceId]?.musicSearch
-        .search(text, page, listInfo.limit)
+        .search(text, page, listInfo.limit, 0, { enableSerpApi: sourceId == 'wy' })
         .then((data: SearchResult) => {
           if (key != listInfo.key) return []
           return setListInfo(data, page, text)

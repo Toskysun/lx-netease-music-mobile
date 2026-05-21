@@ -49,6 +49,7 @@ export const toNewMusicInfo = (oldMusicInfo: any): LX.Music.MusicInfo => {
   } else {
     meta.fee = oldMusicInfo.meta?.fee
     meta.mv = oldMusicInfo.meta?.mv
+    meta.noCopyrightRcmd = oldMusicInfo.noCopyrightRcmd || oldMusicInfo.meta?.noCopyrightRcmd
     if (oldMusicInfo.originCoverType || oldMusicInfo.meta?.originCoverType) {
       meta.originCoverType = oldMusicInfo.originCoverType || oldMusicInfo.meta.originCoverType;
     }
@@ -138,6 +139,7 @@ export const toOldMusicInfo = (minfo: LX.Music.MusicInfo): any => {
     oInfo.albumId = minfo.meta.albumId
     oInfo.types = minfo.meta.qualitys
     oInfo._types = minfo.meta._qualitys
+    oInfo.noCopyrightRcmd = minfo.meta.noCopyrightRcmd
 
     switch (minfo.source) {
       case 'kg':

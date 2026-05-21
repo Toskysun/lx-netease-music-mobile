@@ -147,6 +147,10 @@ export default {
         dt: item.duration, // 将 duration (毫秒) 映射到 dt
         publishTime: item.album?.publishTime,
         pc: item.pc, // 保留可能存在的 pc 字段
+        fee: item.fee,
+        originCoverType: item.originCoverType,
+        noCopyrightRcmd: item.noCopyrightRcmd,
+        mv: item.mv,
         l: item.lMusic,
         m: item.mMusic,
         h: item.hMusic,
@@ -224,6 +228,7 @@ export default {
             picUrl: item.al?.picUrl,
             qualitys: types,
             _qualitys: _types,
+            noCopyrightRcmd: item.noCopyrightRcmd,
           },
           releaseDate: item.publishTime ? dateFormat(item.publishTime, 'Y-M-D') : null,
           songmid: item.id,
@@ -254,6 +259,7 @@ export default {
             qualitys: types,
             _qualitys: _types,
             originCoverType: item.originCoverType,
+            noCopyrightRcmd: item.noCopyrightRcmd,
             mv: item.mv,
           },
           releaseDate: item.publishTime ? dateFormat(item.publishTime, 'Y-M-D') : null,

@@ -8,6 +8,7 @@ import downloadState from '@/store/download/state';
 
 const SENSITIVE_SETTING_KEYS: Array<keyof LX.AppSetting> = [
   'common.wy_cookie',
+  'common.wy_serpapi_key',
   'common.yt_cookie',
   'sync.webdav.password',
 ];

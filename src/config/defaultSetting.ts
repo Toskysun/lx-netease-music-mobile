@@ -14,6 +14,7 @@ const defaultSetting: LX.AppSetting = {
   'common.showExitBtn': false,
   'common.useSystemFileSelector': true,
   'common.wy_cookie': '',
+  'common.wy_serpapi_key': '',
   'common.yt_cookie': '',
   'common.alwaysKeepStatusbarHeight': false,
 

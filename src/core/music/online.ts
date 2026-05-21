@@ -85,14 +85,14 @@ export const getMusicUrl = async ({
 
   const targetQuality = quality ?? getPlayQuality(preferredQuality, currentMusicInfo);
 
-  const cachedUrl = await getStoreMusicUrl(musicInfo, targetQuality)
+  const cachedUrl = await getStoreMusicUrl(currentMusicInfo, targetQuality)
   if (cachedUrl && !isRefresh) return cachedUrl
 
   // 定义高音质列表
   const highQualityLevels: LX.Quality[] = ['flac', 'hires', 'master', 'atmos', 'atmos_plus'];
 
   const isVipUser = userState.wy_vip_type !== 0;
-  const isVipSong = musicInfo.meta.fee === 1;
+  const isVipSong = currentMusicInfo.meta.fee === 1;
   const isHighQuality = highQualityLevels.includes(targetQuality);
 
   // 非网易源或不是网易云vip且歌曲是vip歌曲或高音质歌曲
@@ -104,14 +104,14 @@ export const getMusicUrl = async ({
       console.log('Attempting to get music URL via custom API');
       // 优先尝试自定义音源 (API)
       const result = await handleGetOnlineMusicUrl({
-        musicInfo,
+        musicInfo: currentMusicInfo,
         quality: targetQuality,
         onToggleSource,
         isRefresh,
         allowToggleSource,
       });
       console.log('Custom API request succeeded', result);
-      void saveMusicUrl(musicInfo, result.quality, result.url);
+      void saveMusicUrl(currentMusicInfo, result.quality, result.url);
       return result.url;
     } catch (apiError) {
       console.log('Custom API request failed', apiError);
@@ -122,9 +122,10 @@ export const getMusicUrl = async ({
   // 默认流程
   if (musicInfo.source == 'wy' && settingState.setting['common.wy_cookie']) {
     try {
-      const { url } = await wySdk.cookie.getMusicUrl(musicInfo, targetQuality).promise;
+      const { url } = await wySdk.cookie.getMusicUrl(currentMusicInfo, targetQuality).promise;
       if (url) {
-        void saveMusicUrl(musicInfo, targetQuality, url);
+        void saveMusicUrl(currentMusicInfo, targetQuality, url);
+        if (currentMusicInfo.id !== musicInfo.id) void saveMusicUrl(musicInfo, targetQuality, url);
         return url;
       }
     } catch (error) {
@@ -133,15 +134,16 @@ export const getMusicUrl = async ({
   }
 
   return handleGetOnlineMusicUrl({
-    musicInfo,
+    musicInfo: currentMusicInfo,
     quality: targetQuality,
     onToggleSource,
     isRefresh,
     allowToggleSource,
   }).then(({ url, quality: targetQuality, musicInfo: targetMusicInfo, isFromCache }) => {
-    if (targetMusicInfo.id != musicInfo.id && !isFromCache)
+    if (targetMusicInfo.id != currentMusicInfo.id && !isFromCache)
       void saveMusicUrl(targetMusicInfo, targetQuality, url)
-    void saveMusicUrl(musicInfo, targetQuality, url)
+    void saveMusicUrl(currentMusicInfo, targetQuality, url)
+    if (currentMusicInfo.id !== musicInfo.id) void saveMusicUrl(musicInfo, targetQuality, url)
     return url
   })
 }

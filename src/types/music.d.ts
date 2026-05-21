@@ -42,6 +42,12 @@ declare namespace LX {
       _qualitys: _MusicQualityType
       albumId?: string | number
       originCoverType?: number
+      noCopyrightRcmd?: {
+        songId?: string | number
+        id?: string | number
+        type?: number
+        typeDesc?: string
+      } | null
       _full?: boolean
       mv?: number
     }

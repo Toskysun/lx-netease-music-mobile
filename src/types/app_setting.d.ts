@@ -73,6 +73,7 @@ declare global {
        * 网易云音乐 Cookie
        */
       'common.wy_cookie': string
+      'common.wy_serpapi_key': string
       'common.yt_cookie': string
 
       /**

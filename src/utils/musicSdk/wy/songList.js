@@ -204,6 +204,18 @@ export default {
           types,
           _types,
           typeUrl: {},
+          meta: {
+            songId: item.id,
+            fee: item.fee,
+            albumName: item.pc.alb ?? '',
+            albumId: item.al?.id,
+            picUrl: item.al?.picUrl,
+            qualitys: types,
+            _qualitys: _types,
+            originCoverType: item.originCoverType,
+            noCopyrightRcmd: item.noCopyrightRcmd,
+            mv: item.mv,
+          },
         })
       } else {
         list.push({
@@ -223,8 +235,15 @@ export default {
           _types,
           typeUrl: {},
           meta: {
+            songId: item.id,
             fee: item.fee,
+            albumName: item.al?.name,
+            albumId: item.al?.id,
+            picUrl: item.al?.picUrl,
+            qualitys: types,
+            _qualitys: _types,
             originCoverType: item.originCoverType,
+            noCopyrightRcmd: item.noCopyrightRcmd,
             mv: item.mv,
           }
         })
