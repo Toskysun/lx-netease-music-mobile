@@ -73,3 +73,4 @@ buck-out/
 AGENTS.md
 docs/
 scripts/
+.ccg/
